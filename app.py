@@ -1448,38 +1448,6 @@ DASHBOARD_T = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
   </div>
 </div>
 
-<!-- ── LEARN MORE STRIP ──────────────────────────────────────────── -->
-<div style="background:linear-gradient(135deg,#0B5D4A,#0E8A7B);padding:40px 24px;margin:0">
-  <div style="max-width:900px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr 1fr;gap:20px;text-align:center"
-       class="lm-grid">
-    <a href="/story" style="text-decoration:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
-       border-radius:14px;padding:22px 18px;display:block;transition:background .2s,transform .2s"
-       onmouseover="this.style.background='rgba(255,255,255,.15)';this.style.transform='translateY(-3px)'"
-       onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.transform='translateY(0)'">
-      <div style="font-size:26px;margin-bottom:10px">✦</div>
-      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;color:#fff;margin-bottom:6px">Our Story</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.6">Why CA Toolkit was built — and who built it</div>
-    </a>
-    <a href="/how-to-use" style="text-decoration:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
-       border-radius:14px;padding:22px 18px;display:block;transition:background .2s,transform .2s"
-       onmouseover="this.style.background='rgba(255,255,255,.15)';this.style.transform='translateY(-3px)'"
-       onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.transform='translateY(0)'">
-      <div style="font-size:26px;margin-bottom:10px">📖</div>
-      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;color:#fff;margin-bottom:6px">How to Use</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.6">Step-by-step guide for every tool</div>
-    </a>
-    <a href="/privacy" style="text-decoration:none;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);
-       border-radius:14px;padding:22px 18px;display:block;transition:background .2s,transform .2s"
-       onmouseover="this.style.background='rgba(255,255,255,.15)';this.style.transform='translateY(-3px)'"
-       onmouseout="this.style.background='rgba(255,255,255,.08)';this.style.transform='translateY(0)'">
-      <div style="font-size:26px;margin-bottom:10px">🔒</div>
-      <div style="font-family:'Plus Jakarta Sans',sans-serif;font-size:15px;font-weight:800;color:#fff;margin-bottom:6px">Privacy Policy</div>
-      <div style="font-size:12px;color:rgba(255,255,255,.6);line-height:1.6">How we handle your data and files</div>
-    </a>
-  </div>
-</div>
-<style>@media(max-width:640px){.lm-grid{grid-template-columns:1fr!important}}</style>
-
 <footer>
   <div class="ft-main">
     <div>
