@@ -1746,15 +1746,15 @@ details p{padding:0 16px 12px;font-size:12px;color:var(--muted);line-height:1.7}
       </div>
       <div class="row2">
         <div class="field">
-          <label>Closing Year (CY)</label>
+          <labelPrevious Year (FY ending)</label>
           <input type="number" id="closingYear" placeholder="e.g. 2025" min="2000" max="2100"
                  {{ 'disabled' if uploads_left==0 else '' }}/>
-          <p class="hint">Year ending 31.03.YYYY</p>
+          <p class="hint">e.g. 2026 for FY 2025-26</p>
         </div>
         <div class="field">
-          <label>New Year</label>
+          <label>Current Year (FY ending)</label>
           <input type="number" id="newYear" placeholder="Auto-filled" readonly/>
-          <p class="hint">Auto-filled</p>
+          <p class="hint">Auto-filled — year you are preparing for</p>
         </div>
       </div>
       <div class="field">
@@ -7150,7 +7150,7 @@ def process_file():
             for _ in range(3):
                 base_name = _re.sub(r'[_\-]+\d{4}[-_]\d{2,4}$', '', base_name).strip('_- ')
                 base_name = _re.sub(r'[_\-]+\d{4}$', '', base_name).strip('_- ')
-            fname = f"{base_name}_{ny}.xlsx"
+            fname = f"{base_name} {cy}-{ny}.xlsx"
             try:
                 result = process(ip, op, cy, ny)
                 _rollover_fixed_assets(op, str(ny), result.get("log", []), source_path=ip)
