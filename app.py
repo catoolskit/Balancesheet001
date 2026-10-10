@@ -236,14 +236,14 @@ def all_users(): return _db_fetchall("SELECT * FROM users ORDER BY id")
 def login_required(f):
     @wraps(f)
     def dec(*a, **kw):
-        if "uid" not in session: return redirect(url_for("login_page"))
+        if "uid" not in session: return redirect(url_for("login_page", next=request.path))
         return f(*a, **kw)
     return dec
 
 def admin_required(f):
     @wraps(f)
     def dec(*a, **kw):
-        if "uid" not in session: return redirect(url_for("login_page"))
+        if "uid" not in session: return redirect(url_for("login_page", next=request.path))
         u = get_user_by_id(session["uid"])
         if not u or not u["is_admin"]: return "Access denied.", 403
         return f(*a, **kw)
@@ -860,6 +860,7 @@ input:focus{border-color:var(--brand)}
   <p style="font-size:13px;color:var(--muted);margin-bottom:24px">Enter your credentials to continue</p>
   {% if error %}<div class="alert ae">{{ error }}</div>{% endif %}
   <form method="POST" action="/login">
+  <input type="hidden" name="next" value="{{ next }}"/>
     <div class="field"><label>Username</label>
       <input type="text" name="username" placeholder="Enter username" required autocomplete="username"/></div>
     <div class="field"><label>Password</label>
@@ -1302,7 +1303,7 @@ DASHBOARD_T = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
     <a href="/tool/converter" class="tool-card premium-card anim-up anim-d1">
       <span class="corner-badge cb-prem">⭐ Premium</span>
     {% else %}
-    <a href="/login" class="tool-card premium-card anim-up anim-d1">
+    <a href="/login?next=/tool/converter" class="tool-card premium-card anim-up anim-d1">
       <span class="corner-badge cb-lock">🔒 Sign In</span>
     {% endif %}
       <div class="tool-icon" style="background:linear-gradient(135deg,#E0F2FE,#BAE6FD)">📊</div>
@@ -1319,7 +1320,7 @@ DASHBOARD_T = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
     <a href="/tool/gst-reconciliation" class="tool-card premium-card anim-up anim-d2">
       <span class="corner-badge cb-prem">⭐ Premium</span>
     {% else %}
-    <a href="/login" class="tool-card premium-card anim-up anim-d2">
+    <a href="/login?next=/tool/gst-reconciliation" class="tool-card premium-card anim-up anim-d2">
       <span class="corner-badge cb-lock">🔒 Sign In</span>
     {% endif %}
       <div class="tool-icon" style="background:linear-gradient(135deg,#FEF9C3,#FDE68A)">📋</div>
@@ -1336,7 +1337,7 @@ DASHBOARD_T = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
     <a href="/tool/tb-to-bs" class="tool-card premium-card anim-up anim-d3">
       <span class="corner-badge cb-prem">⭐ Premium</span>
     {% else %}
-    <a href="/login" class="tool-card premium-card anim-up anim-d3">
+    <a href="/login?next=/tool/tb-to-bs" class="tool-card premium-card anim-up anim-d3">
       <span class="corner-badge cb-lock">🔒 Sign In</span>
     {% endif %}
       <div class="tool-icon" style="background:linear-gradient(135deg,#DCFCE7,#A7F3D0)">🗂️</div>
@@ -1353,7 +1354,7 @@ DASHBOARD_T = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
     <a href="/tool/tshape" class="tool-card premium-card anim-up anim-d4">
       <span class="corner-badge cb-prem">&#11088; Premium</span>
     {% else %}
-    <a href="/login" class="tool-card premium-card anim-up anim-d4">
+    <a href="/login?next=/tool/tshape" class="tool-card premium-card anim-up anim-d4">
       <span class="corner-badge cb-lock">&#128274; Sign In</span>
     {% endif %}
       <div class="tool-icon" style="background:linear-gradient(135deg,#F0FDFB,#CCFBF1)">&#128209;</div>
@@ -6089,7 +6090,7 @@ tr:hover td{background:#F9FAFB}
 @app.route("/login", methods=["GET"])
 def login_page():
     if "uid" in session: return redirect(url_for("dashboard"))
-    return render_template_string(LOGIN_T, error=None, email=CONTACT_EMAIL)
+    return render_template_string(LOGIN_T, error=None, email=CONTACT_EMAIL, next=request.args.get("next", ""))
 
 @app.route("/login", methods=["POST"])
 def login_post():
@@ -6097,10 +6098,11 @@ def login_post():
     p = request.form.get("password", "")
     user = get_user_by_name(u)
     if not user or user["password"] != _hash(p):
-        return render_template_string(LOGIN_T, error="Invalid username or password.", email=CONTACT_EMAIL)
+        return render_template_string(LOGIN_T, error="Invalid username or password.", email=CONTACT_EMAIL, next=request.form.get("next", ""))
     session.clear()
     session["uid"] = user["id"]
-    return redirect(url_for("dashboard"))
+    next_url = request.args.get("next") or request.form.get("next") or url_for("dashboard")
+return redirect(next_url)
 
 @app.route("/logout")
 def logout():
