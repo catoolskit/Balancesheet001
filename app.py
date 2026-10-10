@@ -1746,13 +1746,13 @@ details p{padding:0 16px 12px;font-size:12px;color:var(--muted);line-height:1.7}
       </div>
       <div class="row2">
         <div class="field">
-          <label>Previous Year (FY ending)</label>
+          <label>Closing FY</label>
           <input type="number" id="closingYear" placeholder="e.g. 2025" min="2000" max="2100"
                  {{ 'disabled' if uploads_left==0 else '' }}/>
           <p class="hint">e.g. 2026 for FY 2025-26</p>
         </div>
         <div class="field">
-          <label>Current Year (FY ending)</label>
+          <label>New FY</label>
           <input type="number" id="newYear" placeholder="Auto-filled" readonly/>
           <p class="hint">Auto-filled — year you are preparing for</p>
         </div>
