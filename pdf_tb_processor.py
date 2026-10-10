@@ -177,9 +177,15 @@ def _line_text(line: List[dict]) -> str:
 
 def _is_amount(text: str) -> bool:
     """True if the text is purely a number (Indian or Western comma format)."""
-    t = text.strip().replace(',', '')
+    t = text.strip()
     if not t:
         return False
+    # Reject numbers with 10+ digits and NO commas — these are account numbers,
+    # phone numbers, or IDs, not rupee amounts.
+    digits_only = t.replace('-', '').replace('(', '').replace(')', '').replace('.', '')
+    if len(digits_only) >= 10 and ',' not in t:
+        return False
+    t = t.replace(',', '')
     if t.startswith('(') and t.endswith(')'):
         t = t[1:-1]
     if t.startswith('-'):
