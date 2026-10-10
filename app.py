@@ -6102,7 +6102,7 @@ def login_post():
     session.clear()
     session["uid"] = user["id"]
     next_url = request.args.get("next") or request.form.get("next") or url_for("dashboard")
-return redirect(next_url)
+    return redirect(next_url)
 
 @app.route("/logout")
 def logout():
