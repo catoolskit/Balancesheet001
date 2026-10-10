@@ -54,10 +54,10 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 FREE_UPLOADS         = 2
 UPLOAD_VALIDITY_DAYS = 90
 
-ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "sumit_admin")
-ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "Admin@Secure123")
-CONTACT_EMAIL  = "sumitverma2880@gmail.com"
-CONTACT_UPI    = "sumit2615verma@okhdfcbank"
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "admin")
+ADMIN_PASSWORD = os.environ.get("ADMIN_PASSWORD", "changeme")
+CONTACT_EMAIL  = os.environ.get("CONTACT_EMAIL", "support@catoolkit.in")
+CONTACT_UPI    = os.environ.get("CONTACT_UPI", "")
 
 PLANS = {
     "free":     {"label": "Free",         "uploads": 2,   "price": 0},
