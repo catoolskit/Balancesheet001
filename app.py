@@ -6891,7 +6891,7 @@ tbody tr:hover{background:var(--brand-l)}
 <section class="hero">
   <div class="hero-badge">🗂️ CA Tool · Compliance Payment Tracker</div>
   <h1>Auto-fill <em>Compliance Register</em><br/>from Payment Receipts</h1>
-  <p>Upload a ZIP of your statutory payment PDFs — EPF, ESIC, GST, TDS, Electricity — and get a ready compliance table in seconds.</p>
+  <p>Upload a ZIP of your statutory payment PDFs — EPF, ESIC, GST, TDS — and get a ready compliance register as Excel instantly.</p>
 </section>
 
 {% if uploads_left == 0 %}
@@ -6938,7 +6938,7 @@ tbody tr:hover{background:var(--brand-l)}
           <div class="dz-text"><strong>Click to browse</strong> or drag &amp; drop</div>
           <div class="dz-text" style="margin-top:3px">.zip containing PDF receipts · Max 20 MB</div>
           <div class="dz-text" style="margin-top:3px;font-size:11px;color:var(--muted)">
-            EPF · ESIC · GST · TDS · Electricity Bills
+            EPF · ESIC · GST · TDS
           </div>
           <div class="dz-file" id="dzFile"></div>
         </div>
@@ -6962,7 +6962,7 @@ tbody tr:hover{background:var(--brand-l)}
       <ol class="steps">
         <li>
           <strong>Prepare your ZIP</strong>
-          <span>Put all statutory payment PDFs in one folder and zip it. Any mix of EPF, ESIC, GST, TDS, Electricity is fine.</span>
+          <span>Put all statutory payment PDFs in one folder and zip it. Any mix of EPF, ESIC, GST, TDS is fine.</span>
         </li>
         <li>
           <strong>Upload the ZIP</strong>
@@ -6979,29 +6979,6 @@ tbody tr:hover{background:var(--brand-l)}
       </ol>
     </div>
   </div>
-</div>
-
-<!-- Results Section -->
-<div id="resultSection">
-  <div class="result-header">
-    <h2>📋 Extracted Compliance Records</h2>
-    <button class="dl-btn" onclick="downloadExcel()">⬇ Download Excel</button>
-  </div>
-  <div class="table-wrap">
-    <table id="resultTable">
-      <thead>
-        <tr>
-          <th>Particulars</th>
-          <th>Month</th>
-          <th>Amount (Rs.)</th>
-          <th>Date Paid</th>
-          <th>Remarks</th>
-        </tr>
-      </thead>
-      <tbody id="resultBody"></tbody>
-    </table>
-  </div>
-  <div id="warnBox" class="warn-box" style="display:none"></div>
 </div>
 
 <div class="feats">
@@ -7021,8 +6998,6 @@ tbody tr:hover{background:var(--brand-l)}
 </a>
 
 <script>
-let _extractedRows = [];
-let _dlBlob = null;
 
 // Dropzone
 const dz = document.getElementById('dropzone');
@@ -7116,38 +7091,6 @@ const TAG_CLASSES = {
   'EPF': 'tag-epi', 'ESI': 'tag-esic', 'GST': 'tag-gst',
   'TDS': 'tag-tds'
 };
-
-function renderTable(rows) {
-  const tbody = document.getElementById('resultBody');
-  tbody.innerHTML = '';
-  if (!rows.length) {
-    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);padding:20px">No records extracted.</td></tr>';
-  } else {
-    rows.forEach(r => {
-      const cls = TAG_CLASSES[r.particulars] || '';
-      const tr = document.createElement('tr');
-      tr.innerHTML = `
-        <td><span class="${cls}">${r.particulars || ''}</span></td>
-        <td>${r.month || ''}</td>
-        <td style="font-weight:600">${r.amount || ''}</td>
-        <td>${r.date_paid || ''}</td>
-        <td style="text-align:left">${r.remarks || ''}</td>
-      `;
-      tbody.appendChild(tr);
-    });
-  }
-  document.getElementById('resultSection').style.display = 'block';
-  document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
-}
-
-function downloadExcel() {
-  if (_dlBlob) {
-    const url = URL.createObjectURL(_dlBlob);
-    const a = document.createElement('a'); a.href = url;
-    a.download = 'Compliance_Register.xlsx'; a.click();
-    URL.revokeObjectURL(url);
-  }
-}
 
 function _b64toBlob(b64, type) {
   const bin = atob(b64);
