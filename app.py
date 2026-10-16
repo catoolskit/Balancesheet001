@@ -1366,20 +1366,23 @@ DASHBOARD_T = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
         <span class="tool-arrow">&#8594;</span>
       </div>
     </a>
-{% if username %}
-<a href="/tool/tshape" class="tool-card premium-card anim-up anim-d4">
-  <span class="corner-badge cb-prem">&#11088; Premium</span>
-{% else %}
-<a href="/login" class="tool-card premium-card anim-up anim-d4">
-  <span class="corner-badge cb-lock">&#128274; Sign In</span>
-{% endif %}
-  <div class="tool-icon" ...>&#128209;</div>
-  <h2>T-Shape BS Converter</h2>
-  ...
-</a>
 
-  </div>   ← THIS CLOSING </div> ends the tools-grid div
-  </div>
+    {% if username %}
+    <a href="/tool/compliance-tracker" class="tool-card premium-card anim-up anim-d5">
+      <span class="corner-badge cb-prem">⭐ Premium</span>
+    {% else %}
+    <a href="/login" class="tool-card premium-card anim-up anim-d5">
+      <span class="corner-badge cb-lock">🔒 Sign In</span>
+    {% endif %}
+      <div class="tool-icon" style="background:linear-gradient(135deg,#EEF2FF,#C7D2FE)">🗂️</div>
+      <h2>Compliance Payment Tracker</h2>
+      <p>Upload a ZIP of your payment PDFs — EPF, ESIC, GST, TDS, Electricity — and get a ready compliance register table instantly.</p>
+      <div class="tool-footer">
+        {% if username %}<span class="tool-tag tag-live-prem">✓ Live · Premium</span>
+        {% else %}<span class="tool-tag tag-login">🔒 Login to Use</span>{% endif %}
+        <span class="tool-arrow">→</span>
+      </div>
+    </a>
 
   <!-- ── FREE TOOLS ──────────────────────────────────────────────── -->
 </div><!-- close section-wrap -->
