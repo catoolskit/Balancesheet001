@@ -7002,25 +7002,50 @@ tbody tr:hover{background:var(--brand-l)}
 <script>
 
 // Dropzone
-const dz = document.getElementById('dropzone');
-const fi = document.getElementById('zipFile');
+const fi  = document.getElementById('zipFile');
 const dzf = document.getElementById('dzFile');
+const dz  = document.getElementById('dropzone');
 
-fi.addEventListener('change', () => {
-  if (fi.files[0]) { dzf.textContent = '✓ ' + fi.files[0].name; dzf.style.display = 'block'; }
-});
-dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
-dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
-dz.addEventListener('drop', e => {
-  e.preventDefault(); dz.classList.remove('drag');
-  const dt = e.dataTransfer;
-  if (dt.files[0]) {
-    // Create a DataTransfer to set the file input
-    const dtNew = new DataTransfer();
-    dtNew.items.add(dt.files[0]);
-    fi.files = dtNew.files;
-    dzf.textContent = '✓ ' + dt.files[0].name;
+// Show filename when file selected via browser
+fi.addEventListener('change', function() {
+  if (fi.files && fi.files[0]) {
+    dzf.textContent = '✓ ' + fi.files[0].name;
     dzf.style.display = 'block';
+    dz.classList.add('drag');
+  }
+});
+
+// Drag over
+dz.addEventListener('dragover', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  dz.classList.add('drag');
+});
+
+// Drag leave
+dz.addEventListener('dragleave', function(e) {
+  e.preventDefault();
+  dz.classList.remove('drag');
+});
+
+// Drop
+dz.addEventListener('drop', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  dz.classList.remove('drag');
+  var files = e.dataTransfer.files;
+  if (files && files[0]) {
+    try {
+      var dt = new DataTransfer();
+      dt.items.add(files[0]);
+      fi.files = dt.files;
+    } catch(err) {
+      // fallback — store reference
+      fi._droppedFile = files[0];
+    }
+    dzf.textContent = '✓ ' + files[0].name;
+    dzf.style.display = 'block';
+    dz.classList.add('drag');
   }
 });
 
@@ -7032,7 +7057,7 @@ function showStatus(msg, type) {
 }
 
 function processZip() {
-  const file = fi.files[0];
+  const file = fi.files[0] || fi._droppedFile;
   if (!file) { showStatus('Please select a ZIP file first.', 'error'); return; }
   if (!file.name.toLowerCase().endsWith('.zip')) {
     showStatus('Please upload a .zip file.', 'error'); return;
@@ -7048,7 +7073,7 @@ function processZip() {
   showStatus('Reading PDFs from ZIP...', 'success');
 
   const fd = new FormData();
-  fd.append('zip_file', file);
+  fd.append('zip_file', file, file.name);
 
   fetch('/process-compliance', { method: 'POST', body: fd })
     .then(r => r.json())
