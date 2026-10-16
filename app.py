@@ -6932,7 +6932,7 @@ tbody tr:hover{background:var(--brand-l)}
                letter-spacing:.04em;color:var(--muted);margin-bottom:6px">
           Upload ZIP File (.zip)
         </label>
-        <label for="zipFile" class="dropzone" id="dropzone"
+        <div class="dropzone" id="dropzone" onclick="document.getElementById('zipFile').click()"
        style="cursor:pointer;display:block">
   <div class="dz-icon">🗂️</div>
   <div class="dz-text"><strong>Click to browse</strong> or drag &amp; drop</div>
@@ -6941,9 +6941,10 @@ tbody tr:hover{background:var(--brand-l)}
     EPF · ESIC · GST · TDS
   </div>
   <div class="dz-file" id="dzFile"></div>
-</label>
+</div>
 <input type="file" id="zipFile" accept=".zip"
        style="display:none"
+       onchange="handleFileSelect(this)"
        {{ 'disabled' if uploads_left==0 else '' }}/>
 
       <button class="btn" id="processBtn" onclick="processZip()"
