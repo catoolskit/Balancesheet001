@@ -6764,50 +6764,52 @@ def tshape_sample_download():
 COMPLIANCE_T = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Compliance Tracker – CA Toolkit</title>
-<style>
-""" + BASE_CSS + """
+<style>""" + BASE_CSS + """
 .nav-links{display:flex;gap:20px;list-style:none}
-.nav-links a{text-decoration:none;color:var(--muted);font-size:13px;font-weight:500;transition:color .2s}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:13px;font-weight:500}
 .nav-links a:hover{color:var(--brand)}
 .hero{text-align:center;padding:48px 24px 32px;max-width:700px;margin:0 auto}
 .hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--brand-l);
-            color:var(--brand-d);border:1px solid var(--brand-m);border-radius:99px;
-            padding:5px 14px;font-size:12px;font-weight:600;margin-bottom:16px}
+  color:var(--brand-d);border:1px solid var(--brand-m);border-radius:99px;
+  padding:5px 14px;font-size:12px;font-weight:600;margin-bottom:16px}
 h1{font-size:clamp(22px,4vw,36px);font-weight:800;line-height:1.15;letter-spacing:-.5px;margin-bottom:12px}
 h1 em{font-style:normal;color:var(--accent)}
 .hero p{font-size:14px;color:var(--muted);line-height:1.7;max-width:520px;margin:0 auto 24px}
 .main{max-width:1000px;margin:0 auto;padding:32px 24px;
-      display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+  display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
 @media(max-width:768px){.main{grid-template-columns:1fr}}
 .card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);
-      box-shadow:var(--shadow);overflow:hidden}
+  box-shadow:var(--shadow);overflow:hidden}
 .card-head{padding:16px 20px;border-bottom:1px solid var(--border);
-           display:flex;align-items:center;gap:10px}
+  display:flex;align-items:center;gap:10px}
 .card-head .icon{width:34px;height:34px;border-radius:9px;display:flex;
-                 align-items:center;justify-content:center;font-size:18px}
+  align-items:center;justify-content:center;font-size:18px}
 .card-head h2{font-size:14px;font-weight:700;color:var(--ink)}
 .card-head p{font-size:12px;color:var(--muted);margin-top:2px}
 .card-body{padding:20px}
 .usage-row{display:flex;justify-content:space-between;align-items:center;
-           font-size:12px;font-weight:600;margin-bottom:5px}
+  font-size:12px;font-weight:600;margin-bottom:5px}
 .usage-bar-bg{background:#F3F4F6;border-radius:99px;height:6px;overflow:hidden;margin-bottom:16px}
 .usage-bar-fill{height:100%;border-radius:99px}
-.dropzone{border:2px dashed var(--border);border-radius:10px;padding:30px 14px;
-          text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--bg)}
-.dropzone:hover,.dropzone.drag{border-color:var(--brand);background:var(--brand-l)}
-.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;pointer-events:none}
+.field{margin-bottom:16px}
+.field-label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.04em;color:var(--muted);margin-bottom:6px}
+.upload-box{border:2px dashed var(--border2);border-radius:10px;padding:28px 14px;
+  text-align:center;background:var(--bg);transition:all .2s;cursor:pointer}
+.upload-box:hover{border-color:var(--brand);background:var(--brand-l)}
+.upload-box.drag{border-color:var(--brand);background:var(--brand-l)}
 .dz-icon{font-size:32px;margin-bottom:8px}
 .dz-text{font-size:13px;color:var(--muted)}
-.dz-text strong{color:var(--brand)}
-.dz-file{font-size:12px;font-weight:600;color:var(--green);margin-top:6px;display:none}
+.dz-text strong{color:var(--brand);cursor:pointer;text-decoration:underline}
+.dz-file{font-size:12px;font-weight:600;color:#059669;margin-top:6px;display:none}
 .btn{width:100%;background:linear-gradient(135deg,var(--brand),var(--brand-d));color:#fff;
-     border:none;border-radius:10px;padding:13px;font-family:inherit;font-size:14px;
-     font-weight:700;cursor:pointer;transition:opacity .2s;
-     display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
+  border:none;border-radius:10px;padding:13px;font-family:inherit;font-size:14px;
+  font-weight:700;cursor:pointer;transition:opacity .2s;
+  display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
 .btn:hover{opacity:.92}
 .btn:disabled{opacity:.5;cursor:not-allowed}
 .spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);
-         border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+  border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
 @keyframes spin{to{transform:rotate(360deg)}}
 #status{margin-top:12px;border-radius:8px;padding:12px 14px;font-size:13px;display:none;line-height:1.6}
 #status.success{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46}
@@ -6817,55 +6819,20 @@ h1 em{font-style:normal;color:var(--accent)}
 .steps li{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border)}
 .steps li:last-child{border:none;padding-bottom:0}
 .steps li::before{counter-increment:step;content:counter(step);min-width:22px;height:22px;
-                  background:var(--brand);color:#fff;border-radius:50%;display:flex;
-                  align-items:center;justify-content:center;font-size:11px;font-weight:700;
-                  margin-top:2px;flex-shrink:0}
+  background:var(--brand);color:#fff;border-radius:50%;display:flex;
+  align-items:center;justify-content:center;font-size:11px;font-weight:700;
+  margin-top:2px;flex-shrink:0}
 .steps li strong{display:block;font-size:12px;font-weight:600;margin-bottom:2px;color:var(--ink)}
 .steps li span{font-size:11.5px;color:var(--muted)}
-/* Results table */
-#resultSection{display:none;max-width:1000px;margin:0 auto;padding:0 24px 48px}
-.result-header{display:flex;align-items:center;justify-content:space-between;
-               margin-bottom:16px;flex-wrap:wrap;gap:10px}
-.result-header h2{font-size:16px;font-weight:800;color:var(--ink)}
-.dl-btn{display:inline-flex;align-items:center;gap:6px;
-        background:linear-gradient(135deg,var(--green),#059669);color:#fff;
-        border:none;border-radius:8px;padding:9px 18px;
-        font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;
-        font-family:inherit;transition:opacity .18s}
-.dl-btn:hover{opacity:.9}
-.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);
-            box-shadow:var(--shadow)}
-table{width:100%;border-collapse:collapse;font-size:13px;background:var(--white)}
-thead th{background:linear-gradient(135deg,#1F4E79,#2E6DA4);color:#fff;
-         padding:12px 14px;text-align:center;font-weight:700;font-size:12px;
-         letter-spacing:.03em;white-space:nowrap}
-tbody tr:nth-child(even){background:#EBF3FB}
-tbody td{padding:10px 14px;text-align:center;color:var(--ink);border-bottom:1px solid var(--border)}
-tbody tr:last-child td{border-bottom:none}
-tbody tr:hover{background:var(--brand-l)}
-.tag-epi{background:#DCFCE7;color:#065F46;padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:700}
-.tag-esic{background:#DBEAFE;color:#1E40AF;padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:700}
-.tag-gst{background:#FEF9C3;color:#713F12;padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:700}
-.tag-tds{background:#FCE7F3;color:#9D174D;padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:700}
-.tag-elec{background:#FEF3C7;color:#92400E;padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:700}
-.warn-box{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;
-          padding:12px 14px;font-size:12px;color:#92400E;margin-top:12px;line-height:1.7}
-.feat{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
-      padding:18px 16px;text-align:center}
-.feat .fi{font-size:26px;margin-bottom:8px}
-.feat h3{font-size:12.5px;font-weight:700;margin-bottom:4px;color:var(--ink)}
-.feat p{font-size:11.5px;color:var(--muted);line-height:1.6}
 .feats{max-width:1000px;margin:0 auto;padding:0 24px 40px;
-       display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
 @media(max-width:768px){.feats{grid-template-columns:repeat(2,1fr)}}
-.limit-banner{max-width:640px;margin:0 auto 0;padding:0 24px}
-.limit-box{background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--radius);
-           padding:20px 24px;text-align:center;margin-top:16px}
-.limit-box h3{font-size:15px;font-weight:700;color:#991B1B;margin-bottom:8px}
-.limit-box p{font-size:13px;color:#7F1D1D;line-height:1.7;margin-bottom:10px}
-.limit-box a{color:var(--brand);font-weight:600;text-decoration:none}
+.feat{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:18px 16px;text-align:center}
+.feat .fi{font-size:26px;margin-bottom:8px}
+.feat h3{font-size:12.5px;font-weight:700;margin-bottom:4px}
+.feat p{font-size:11.5px;color:var(--muted);line-height:1.6}
 </style></head><body>
-
 <nav>
   <a href="/" class="logo">CA<span class="logo-dot"></span><span>Toolkit</span></a>
   <ul class="nav-links">
@@ -6894,17 +6861,6 @@ tbody tr:hover{background:var(--brand-l)}
   <p>Upload a ZIP of your statutory payment PDFs — EPF, ESIC, GST, TDS — and get a ready compliance register as Excel instantly.</p>
 </section>
 
-{% if uploads_left == 0 %}
-<div class="limit-banner">
-  <div class="limit-box">
-    <h3>🔒 No uploads remaining</h3>
-    <p>You've used all your uploads. Contact us to recharge.<br/>
-       📧 <a href="mailto:{{ contact_email }}">{{ contact_email }}</a> &nbsp;|&nbsp;
-       💳 UPI: <strong>{{ contact_upi }}</strong></p>
-  </div>
-</div>
-{% endif %}
-
 <div class="main" id="tool">
   <div class="card">
     <div class="card-head">
@@ -6926,30 +6882,27 @@ tbody tr:hover{background:var(--brand-l)}
              style="width:{{ bar_pct }}%;background:{{ '#EF4444' if uploads_left==0 else '#F59E0B' if uploads_left<=3 else '#10B981' }}">
         </div>
       </div>
-
       <div class="field">
-        <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;
-               letter-spacing:.04em;color:var(--muted);margin-bottom:6px">
-          Upload ZIP File (.zip)
-        </label>
-        <div class="dropzone" id="dropzone" onclick="document.getElementById('zipFile').click()"
-       style="cursor:pointer;display:block">
-  <div class="dz-icon">🗂️</div>
-  <div class="dz-text"><strong>Click to browse</strong> or drag &amp; drop</div>
-  <div class="dz-text" style="margin-top:3px">.zip containing PDF receipts · Max 20 MB</div>
-  <div class="dz-text" style="margin-top:3px;font-size:11px;color:var(--muted)">
-    EPF · ESIC · GST · TDS
-  </div>
-  <div class="dz-file" id="dzFile"></div>
-</div>
-<input type="file" id="zipFile" accept=".zip"
-       style="display:none"
-       onchange="handleFileSelect(this)"
-       {{ 'disabled' if uploads_left==0 else '' }}/>
-
-      <button class="btn" id="processBtn" onclick="processZip()"
+        <span class="field-label">Upload ZIP File (.zip)</span>
+        <div class="upload-box" id="uploadBox"
+             ondragover="event.preventDefault();this.classList.add('drag')"
+             ondragleave="this.classList.remove('drag')"
+             ondrop="onDrop(event)">
+          <div class="dz-icon">🗂️</div>
+          <div class="dz-text">
+            <strong onclick="document.getElementById('zipInput').click()">Click to browse</strong>
+            &nbsp;or drag &amp; drop here
+          </div>
+          <div class="dz-text" style="margin-top:4px;font-size:11px">.zip containing PDF receipts · Max 20 MB</div>
+          <div class="dz-text" style="margin-top:2px;font-size:11px;color:var(--muted)">EPF · ESIC · GST · TDS</div>
+          <div class="dz-file" id="dzFile"></div>
+        </div>
+        <input type="file" id="zipInput" accept=".zip" style="display:none"
+               onchange="onFileSelect(this)" {{ 'disabled' if uploads_left==0 else '' }}/>
+      </div>
+      <button class="btn" id="processBtn" onclick="doUpload()"
               {{ 'disabled' if uploads_left==0 else '' }}>
-        <span id="btnText">⚡ Extract &amp; Generate Table</span>
+        <span id="btnText">⚡ Extract &amp; Download Excel</span>
         <div class="spinner" id="spinner"></div>
       </button>
       <div id="status"></div>
@@ -6972,12 +6925,12 @@ tbody tr:hover{background:var(--brand-l)}
           <span>Drop the ZIP file here. Each PDF is read and identified automatically — no renaming needed.</span>
         </li>
         <li>
-          <strong>Review on screen</strong>
-          <span>Extracted records appear in a compliance table: Particulars, Month, Amount, Date Paid, Remarks.</span>
+          <strong>Auto extraction</strong>
+          <span>The tool reads every PDF, extracts Particulars, Month, Amount and Date Paid automatically.</span>
         </li>
         <li>
           <strong>Download Excel</strong>
-          <span>Download the formatted compliance register as a .xlsx file — ready to present or file.</span>
+          <span>Your compliance register downloads instantly as a formatted .xlsx — ready to present or file.</span>
         </li>
       </ol>
     </div>
@@ -7001,125 +6954,100 @@ tbody tr:hover{background:var(--brand-l)}
 </a>
 
 <script>
+var _file = null;
 
-// Dropzone
-const fi  = document.getElementById('zipFile');
-const dzf = document.getElementById('dzFile');
-const dz  = document.getElementById('dropzone');
-
-// Show filename when file selected via browser
-fi.addEventListener('change', function() {
-  if (fi.files && fi.files[0]) {
-    dzf.textContent = '✓ ' + fi.files[0].name;
-    dzf.style.display = 'block';
-    dz.classList.add('drag');
+function onFileSelect(input) {
+  if (input.files && input.files[0]) {
+    _file = input.files[0];
+    showFileName(_file.name);
   }
-});
+}
 
-// Drag over
-dz.addEventListener('dragover', function(e) {
+function onDrop(e) {
   e.preventDefault();
-  e.stopPropagation();
-  dz.classList.add('drag');
-});
-
-// Drag leave
-dz.addEventListener('dragleave', function(e) {
-  e.preventDefault();
-  dz.classList.remove('drag');
-});
-
-// Drop
-dz.addEventListener('drop', function(e) {
-  e.preventDefault();
-  e.stopPropagation();
-  dz.classList.remove('drag');
-  var files = e.dataTransfer.files;
-  if (files && files[0]) {
-    try {
-      var dt = new DataTransfer();
-      dt.items.add(files[0]);
-      fi.files = dt.files;
-    } catch(err) {
-      // fallback — store reference
-      fi._droppedFile = files[0];
-    }
-    dzf.textContent = '✓ ' + files[0].name;
-    dzf.style.display = 'block';
-    dz.classList.add('drag');
+  document.getElementById('uploadBox').classList.remove('drag');
+  if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+    _file = e.dataTransfer.files[0];
+    showFileName(_file.name);
   }
-});
+}
 
-function showStatus(msg, type) {
-  const s = document.getElementById('status');
-  s.textContent = msg;
-  s.className = type;
+function showFileName(name) {
+  var d = document.getElementById('dzFile');
+  d.textContent = '✓ ' + name;
+  d.style.display = 'block';
+  document.getElementById('uploadBox').classList.add('drag');
+}
+
+function showStatus(msg, cls) {
+  var s = document.getElementById('status');
+  s.innerHTML = msg;
+  s.className = cls;
   s.style.display = 'block';
 }
 
-function processZip() {
-  const file = fi.files[0] || fi._droppedFile;
-  if (!file) { showStatus('Please select a ZIP file first.', 'error'); return; }
-  if (!file.name.toLowerCase().endsWith('.zip')) {
-    showStatus('Please upload a .zip file.', 'error'); return;
+function doUpload() {
+  if (!_file) {
+    // Try from input too
+    var inp = document.getElementById('zipInput');
+    if (inp.files && inp.files[0]) {
+      _file = inp.files[0];
+    } else {
+      showStatus('Please select a ZIP file first.', 'error');
+      return;
+    }
+  }
+  if (!_file.name.toLowerCase().endsWith('.zip')) {
+    showStatus('Please upload a .zip file.', 'error');
+    return;
   }
 
-  const btn = document.getElementById('processBtn');
-  const btnText = document.getElementById('btnText');
-  const spinner = document.getElementById('spinner');
+  var btn = document.getElementById('processBtn');
+  var btnText = document.getElementById('btnText');
+  var sp = document.getElementById('spinner');
   btn.disabled = true;
-  btnText.textContent = 'Extracting...';
-  spinner.style.display = 'block';
-  document.getElementById('resultSection').style.display = 'none';
+  btnText.textContent = 'Processing...';
+  sp.style.display = 'block';
   showStatus('Reading PDFs from ZIP...', 'success');
 
-  const fd = new FormData();
-  fd.append('zip_file', file, file.name);
+  var fd = new FormData();
+  fd.append('zip_file', _file, _file.name);
 
-  fetch('/process-compliance', { method: 'POST', body: fd })
-    .then(r => r.json())
-    .then(data => {
+  fetch('/process-compliance', {method: 'POST', body: fd})
+    .then(function(r){ return r.json(); })
+    .then(function(data) {
       btn.disabled = false;
-      btnText.textContent = '⚡ Extract & Generate Table';
-      spinner.style.display = 'none';
+      btnText.textContent = '⚡ Extract & Download Excel';
+      sp.style.display = 'none';
 
       if (data.status === 'error') {
-        showStatus('❌ ' + (data.message || 'Error processing file.'), 'error');
+        showStatus('❌ ' + (data.message || 'Error.'), 'error');
         return;
       }
-
-   if (data.excel_b64) {
-        const blob = _b64toBlob(data.excel_b64,
-          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
+      if (data.excel_b64) {
+        var bin = atob(data.excel_b64);
+        var arr = new Uint8Array(bin.length);
+        for (var i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+        var blob = new Blob([arr], {type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
         a.href = url;
         a.download = 'Compliance_Register.xlsx';
+        document.body.appendChild(a);
         a.click();
+        document.body.removeChild(a);
         URL.revokeObjectURL(url);
         showStatus('✅ ' + data.message + ' Excel downloaded!', 'success');
       } else {
         showStatus('⚠️ ' + (data.message || 'No records extracted.'), 'warn');
       }
-      
-    .catch(err => {
+    })
+    .catch(function(err) {
       btn.disabled = false;
-      btnText.textContent = '⚡ Extract & Generate Table';
-      spinner.style.display = 'none';
+      btnText.textContent = '⚡ Extract & Download Excel';
+      sp.style.display = 'none';
       showStatus('❌ Network error: ' + err, 'error');
     });
-}
-
-const TAG_CLASSES = {
-  'EPF': 'tag-epi', 'ESI': 'tag-esic', 'GST': 'tag-gst',
-  'TDS': 'tag-tds'
-};
-
-function _b64toBlob(b64, type) {
-  const bin = atob(b64);
-  const arr = new Uint8Array(bin.length);
-  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
-  return new Blob([arr], { type });
 }
 </script>
 </body></html>"""
