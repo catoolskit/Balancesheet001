@@ -7090,21 +7090,20 @@ function processZip() {
         return;
       }
 
-      showStatus('✅ ' + data.message, 'success');
-      _extractedRows = data.rows || [];
-      _dlBlob = data.excel_b64 ? _b64toBlob(data.excel_b64,
-        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') : null;
-      renderTable(_extractedRows);
-
-      if (data.errors && data.errors.length) {
-        const wb = document.getElementById('warnBox');
-        wb.innerHTML = '⚠️ <strong>Some files had issues:</strong><br>' +
-          data.errors.map(e => '• ' + e).join('<br>');
-        wb.style.display = 'block';
+   if (data.excel_b64) {
+        const blob = _b64toBlob(data.excel_b64,
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'Compliance_Register.xlsx';
+        a.click();
+        URL.revokeObjectURL(url);
+        showStatus('✅ ' + data.message + ' Excel downloaded!', 'success');
       } else {
-        document.getElementById('warnBox').style.display = 'none';
+        showStatus('⚠️ ' + (data.message || 'No records extracted.'), 'warn');
       }
-    })
+      
     .catch(err => {
       btn.disabled = false;
       btnText.textContent = '⚡ Extract & Generate Table';
@@ -7115,7 +7114,7 @@ function processZip() {
 
 const TAG_CLASSES = {
   'EPF': 'tag-epi', 'ESI': 'tag-esic', 'GST': 'tag-gst',
-  'TDS': 'tag-tds', 'Electricity': 'tag-elec',
+  'TDS': 'tag-tds'
 };
 
 function renderTable(rows) {
