@@ -126,15 +126,25 @@ def _fmt_date(date_str):
 def _detect_doc_type(text):
     """Return document type string based on text content."""
     t = text.lower()
-    if "employees' provident fund" in t or "epfo" in t or "payment confirmation receipt" in t and "trrn" in t:
+    # EPF
+    if ("provident fund" in t or "epfo" in t or "trrn" in t or
+            "payment confirmation receipt" in t or "wage month" in t):
         return "EPF"
-    if "employees' state insurance" in t or "esic" in t or "challan number" in t and "employer's code" in t:
+    # ESIC
+    if ("state insurance" in t or "esic" in t or
+            "challan period" in t or "challan submitted" in t or
+            "employer's code" in t):
         return "ESIC"
-    if "goods and services tax" in t and "payment receipt" in t and ("cgst" in t or "igst" in t or "sgst" in t):
+    # GST
+    if (("goods and services" in t or "gst" in t) and
+            ("cgst" in t or "igst" in t or "sgst" in t or
+             "deposit date" in t or "cpin" in t or "rbisogstpmt" in t)):
         return "GST"
-    if "income tax department" in t and ("challan receipt" in t or "tds/tcs" in t or "281" in t):
+    # TDS — Income Tax / ITD payment
+    if ("income tax" in t or "tds" in t or "itns" in t or
+            "281" in t or "rbisocbdter" in t or "itd payment" in t or
+            "tds/tcs" in t or "mandate form for making tax" in t):
         return "TDS"
-   
     return "UNKNOWN"
 
 
@@ -252,35 +262,26 @@ def _parse_gst(text):
 
 
 def _parse_tds(text):
-    """
-    Parse Income Tax Dept Challan Receipt (ITNS 281N).
-    Extracts: Section description (for particulars), Tax Year → month,
-              Amount, Date of Deposit
-    """
     rows = []
 
-    # Amount
-    amt_m = re.search(r'Amount\s*\(in Rs\.\)\s*[:\-]?\s*₹?\s*([\d,]+)', text)
-    if not amt_m:
-        amt_m = re.search(r'Total\s*\(A\+B\+C\+D\+E\+F\+G\)\s*([\d,]+)', text)
+    # Amount — works for both challan receipt and mandate form
+    amt_m = re.search(r'(?:amount|remit an amount of)\s*[:\-]?\s*[₹Rs\.]*\s*([\d,]+)', text, re.IGNORECASE)
     amount = ""
     if amt_m:
         raw = amt_m.group(1).replace(',', '').strip()
-        # Format with Indian comma system
         try:
-            n = int(raw)
-            # Simple formatting: just add .00 and commas
-            amount = f"{n:,}.00"
-        except Exception:
-            amount = raw + ".00"
+            n = int(float(raw))
+            amount = f"{n:,}"
+        except:
+            amount = raw
 
-    # Date of Deposit
-    date_m = re.search(r'Date of Deposit\s*[:\-]?\s*(\d{2}[- ][A-Za-z]{3}[- ]\d{4})', text)
+    # Date — Valid Till date or cheque date or deposit date
+    date_m = re.search(r'(?:valid till|date of deposit|cheque date)\s*[:\-]?\s*(\d{2}[./-][A-Za-z0-9]{2,3}[./-]\d{2,4})', text, re.IGNORECASE)
     if not date_m:
-        date_m = re.search(r'Date of Deposit\s*[:\-]?\s*(\d{2}[-/]\d{2}[-/]\d{4})', text)
+        date_m = re.search(r'(\d{2}[-/]\d{2}[-/]\d{4})', text)
     date_paid = _fmt_date(date_m.group(1)) if date_m else ""
 
-    # Month from date of deposit
+    # Month from date
     month = ""
     if date_paid:
         parts = date_paid.split('.')
@@ -294,14 +295,6 @@ def _parse_tds(text):
             mon_full = month_num_map.get(parts[1], parts[1])
             year_short = parts[2][2:]
             month = f"{mon_full}'{year_short}"
-
-    # For TDS, particulars = "TDS"
-    # Get section description for remarks
-    sec_m = re.search(r'Description\s+Section\s+Code.*?\n(.*?)\n', text, re.DOTALL)
-    section_desc = ""
-    if sec_m:
-        line = _clean(sec_m.group(1))
-        section_desc = line[:60] if line else ""
 
     if amount or date_paid:
         rows.append({
