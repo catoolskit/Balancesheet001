@@ -1366,7 +1366,19 @@ DASHBOARD_T = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
         <span class="tool-arrow">&#8594;</span>
       </div>
     </a>
+{% if username %}
+<a href="/tool/tshape" class="tool-card premium-card anim-up anim-d4">
+  <span class="corner-badge cb-prem">&#11088; Premium</span>
+{% else %}
+<a href="/login" class="tool-card premium-card anim-up anim-d4">
+  <span class="corner-badge cb-lock">&#128274; Sign In</span>
+{% endif %}
+  <div class="tool-icon" ...>&#128209;</div>
+  <h2>T-Shape BS Converter</h2>
+  ...
+</a>
 
+  </div>   ← THIS CLOSING </div> ends the tools-grid div
   </div>
 
   <!-- ── FREE TOOLS ──────────────────────────────────────────────── -->
@@ -6742,7 +6754,481 @@ def tshape_sample_download():
         as_attachment=True,
         mimetype="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
     )
+# ══════════════════════════════════════════════════════════════════════
+#  COMPLIANCE TRACKER TOOL
+# ══════════════════════════════════════════════════════════════════════
 
+COMPLIANCE_T = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Compliance Tracker – CA Toolkit</title>
+<style>
+""" + BASE_CSS + """
+.nav-links{display:flex;gap:20px;list-style:none}
+.nav-links a{text-decoration:none;color:var(--muted);font-size:13px;font-weight:500;transition:color .2s}
+.nav-links a:hover{color:var(--brand)}
+.hero{text-align:center;padding:48px 24px 32px;max-width:700px;margin:0 auto}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--brand-l);
+            color:var(--brand-d);border:1px solid var(--brand-m);border-radius:99px;
+            padding:5px 14px;font-size:12px;font-weight:600;margin-bottom:16px}
+h1{font-size:clamp(22px,4vw,36px);font-weight:800;line-height:1.15;letter-spacing:-.5px;margin-bottom:12px}
+h1 em{font-style:normal;color:var(--accent)}
+.hero p{font-size:14px;color:var(--muted);line-height:1.7;max-width:520px;margin:0 auto 24px}
+.main{max-width:1000px;margin:0 auto;padding:32px 24px;
+      display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:start}
+@media(max-width:768px){.main{grid-template-columns:1fr}}
+.card{background:var(--white);border-radius:var(--radius);border:1px solid var(--border);
+      box-shadow:var(--shadow);overflow:hidden}
+.card-head{padding:16px 20px;border-bottom:1px solid var(--border);
+           display:flex;align-items:center;gap:10px}
+.card-head .icon{width:34px;height:34px;border-radius:9px;display:flex;
+                 align-items:center;justify-content:center;font-size:18px}
+.card-head h2{font-size:14px;font-weight:700;color:var(--ink)}
+.card-head p{font-size:12px;color:var(--muted);margin-top:2px}
+.card-body{padding:20px}
+.usage-row{display:flex;justify-content:space-between;align-items:center;
+           font-size:12px;font-weight:600;margin-bottom:5px}
+.usage-bar-bg{background:#F3F4F6;border-radius:99px;height:6px;overflow:hidden;margin-bottom:16px}
+.usage-bar-fill{height:100%;border-radius:99px}
+.dropzone{border:2px dashed var(--border);border-radius:10px;padding:30px 14px;
+          text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--bg)}
+.dropzone:hover,.dropzone.drag{border-color:var(--brand);background:var(--brand-l)}
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;pointer-events:none}
+.dz-icon{font-size:32px;margin-bottom:8px}
+.dz-text{font-size:13px;color:var(--muted)}
+.dz-text strong{color:var(--brand)}
+.dz-file{font-size:12px;font-weight:600;color:var(--green);margin-top:6px;display:none}
+.btn{width:100%;background:linear-gradient(135deg,var(--brand),var(--brand-d));color:#fff;
+     border:none;border-radius:10px;padding:13px;font-family:inherit;font-size:14px;
+     font-weight:700;cursor:pointer;transition:opacity .2s;
+     display:flex;align-items:center;justify-content:center;gap:8px;margin-top:16px}
+.btn:hover{opacity:.92}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);
+         border-top-color:#fff;border-radius:50%;animation:spin .7s linear infinite;display:none}
+@keyframes spin{to{transform:rotate(360deg)}}
+#status{margin-top:12px;border-radius:8px;padding:12px 14px;font-size:13px;display:none;line-height:1.6}
+#status.success{background:#ECFDF5;border:1px solid #A7F3D0;color:#065F46}
+#status.error{background:#FEF2F2;border:1px solid #FECACA;color:#991B1B}
+#status.warn{background:#FFFBEB;border:1px solid #FDE68A;color:#92400E}
+.steps{padding:0;list-style:none;counter-reset:step}
+.steps li{display:flex;gap:10px;align-items:flex-start;padding:11px 0;border-bottom:1px solid var(--border)}
+.steps li:last-child{border:none;padding-bottom:0}
+.steps li::before{counter-increment:step;content:counter(step);min-width:22px;height:22px;
+                  background:var(--brand);color:#fff;border-radius:50%;display:flex;
+                  align-items:center;justify-content:center;font-size:11px;font-weight:700;
+                  margin-top:2px;flex-shrink:0}
+.steps li strong{display:block;font-size:12px;font-weight:600;margin-bottom:2px;color:var(--ink)}
+.steps li span{font-size:11.5px;color:var(--muted)}
+/* Results table */
+#resultSection{display:none;max-width:1000px;margin:0 auto;padding:0 24px 48px}
+.result-header{display:flex;align-items:center;justify-content:space-between;
+               margin-bottom:16px;flex-wrap:wrap;gap:10px}
+.result-header h2{font-size:16px;font-weight:800;color:var(--ink)}
+.dl-btn{display:inline-flex;align-items:center;gap:6px;
+        background:linear-gradient(135deg,var(--green),#059669);color:#fff;
+        border:none;border-radius:8px;padding:9px 18px;
+        font-size:13px;font-weight:700;cursor:pointer;text-decoration:none;
+        font-family:inherit;transition:opacity .18s}
+.dl-btn:hover{opacity:.9}
+.table-wrap{overflow-x:auto;border-radius:12px;border:1px solid var(--border);
+            box-shadow:var(--shadow)}
+table{width:100%;border-collapse:collapse;font-size:13px;background:var(--white)}
+thead th{background:linear-gradient(135deg,#1F4E79,#2E6DA4);color:#fff;
+         padding:12px 14px;text-align:center;font-weight:700;font-size:12px;
+         letter-spacing:.03em;white-space:nowrap}
+tbody tr:nth-child(even){background:#EBF3FB}
+tbody td{padding:10px 14px;text-align:center;color:var(--ink);border-bottom:1px solid var(--border)}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover{background:var(--brand-l)}
+.tag-epi{background:#DCFCE7;color:#065F46;padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:700}
+.tag-esic{background:#DBEAFE;color:#1E40AF;padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:700}
+.tag-gst{background:#FEF9C3;color:#713F12;padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:700}
+.tag-tds{background:#FCE7F3;color:#9D174D;padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:700}
+.tag-elec{background:#FEF3C7;color:#92400E;padding:3px 9px;border-radius:99px;font-size:10.5px;font-weight:700}
+.warn-box{background:#FFFBEB;border:1px solid #FDE68A;border-radius:8px;
+          padding:12px 14px;font-size:12px;color:#92400E;margin-top:12px;line-height:1.7}
+.feat{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+      padding:18px 16px;text-align:center}
+.feat .fi{font-size:26px;margin-bottom:8px}
+.feat h3{font-size:12.5px;font-weight:700;margin-bottom:4px;color:var(--ink)}
+.feat p{font-size:11.5px;color:var(--muted);line-height:1.6}
+.feats{max-width:1000px;margin:0 auto;padding:0 24px 40px;
+       display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:768px){.feats{grid-template-columns:repeat(2,1fr)}}
+.limit-banner{max-width:640px;margin:0 auto 0;padding:0 24px}
+.limit-box{background:#FEF2F2;border:1px solid #FECACA;border-radius:var(--radius);
+           padding:20px 24px;text-align:center;margin-top:16px}
+.limit-box h3{font-size:15px;font-weight:700;color:#991B1B;margin-bottom:8px}
+.limit-box p{font-size:13px;color:#7F1D1D;line-height:1.7;margin-bottom:10px}
+.limit-box a{color:var(--brand);font-weight:600;text-decoration:none}
+</style></head><body>
+
+<nav>
+  <a href="/" class="logo">CA<span class="logo-dot"></span><span>Toolkit</span></a>
+  <ul class="nav-links">
+    <li><a href="#tool">Tool</a></li>
+    <li><a href="#how">How It Works</a></li>
+  </ul>
+  <div class="nav-right">
+    {% if username %}
+    <div class="nav-user">
+      <span class="nav-avatar">{{ username[0].upper() }}</span>
+      <strong>{{ username }}</strong>
+      <span class="badge b-{{ plan }}">{{ plan_label }}</span>
+    </div>
+    <div class="nav-sep"></div>
+    {% if is_admin %}<a href="/admin" class="nav-btn ghost">⚙ Admin</a>{% endif %}
+    {% endif %}
+    <a href="/" class="nav-btn dash">⬅ Dashboard</a>
+    {% if username %}<a href="/logout" class="nav-link">Sign out</a>
+    {% else %}<a href="/login" class="nav-btn">Sign In →</a>{% endif %}
+  </div>
+</nav>
+
+<section class="hero">
+  <div class="hero-badge">🗂️ CA Tool · Compliance Payment Tracker</div>
+  <h1>Auto-fill <em>Compliance Register</em><br/>from Payment Receipts</h1>
+  <p>Upload a ZIP of your statutory payment PDFs — EPF, ESIC, GST, TDS, Electricity — and get a ready compliance table in seconds.</p>
+</section>
+
+{% if uploads_left == 0 %}
+<div class="limit-banner">
+  <div class="limit-box">
+    <h3>🔒 No uploads remaining</h3>
+    <p>You've used all your uploads. Contact us to recharge.<br/>
+       📧 <a href="mailto:{{ contact_email }}">{{ contact_email }}</a> &nbsp;|&nbsp;
+       💳 UPI: <strong>{{ contact_upi }}</strong></p>
+  </div>
+</div>
+{% endif %}
+
+<div class="main" id="tool">
+  <div class="card">
+    <div class="card-head">
+      <div class="icon" style="background:#EBF5FF">📁</div>
+      <div>
+        <h2>Upload Payment Receipts ZIP</h2>
+        <p>{{ plan_label }} · {{ uploads_left }} upload{{ 's' if uploads_left != 1 else '' }} remaining</p>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="usage-row">
+        <span style="color:var(--muted)">Uploads used</span>
+        <span><strong>{{ uploads_used }}</strong> / {{ uploads_total }}
+          {% if validity_end %}<span style="color:#9CA3AF;font-weight:400"> · expires {{ validity_end[:10] }}</span>{% endif %}
+        </span>
+      </div>
+      <div class="usage-bar-bg">
+        <div class="usage-bar-fill"
+             style="width:{{ bar_pct }}%;background:{{ '#EF4444' if uploads_left==0 else '#F59E0B' if uploads_left<=3 else '#10B981' }}">
+        </div>
+      </div>
+
+      <div class="field">
+        <label style="display:block;font-size:11px;font-weight:600;text-transform:uppercase;
+               letter-spacing:.04em;color:var(--muted);margin-bottom:6px">
+          Upload ZIP File (.zip)
+        </label>
+        <div class="dropzone" id="dropzone">
+          <input type="file" id="zipFile" accept=".zip" {{ 'disabled' if uploads_left==0 else '' }}/>
+          <div class="dz-icon">🗂️</div>
+          <div class="dz-text"><strong>Click to browse</strong> or drag &amp; drop</div>
+          <div class="dz-text" style="margin-top:3px">.zip containing PDF receipts · Max 20 MB</div>
+          <div class="dz-text" style="margin-top:3px;font-size:11px;color:var(--muted)">
+            EPF · ESIC · GST · TDS · Electricity Bills
+          </div>
+          <div class="dz-file" id="dzFile"></div>
+        </div>
+      </div>
+
+      <button class="btn" id="processBtn" onclick="processZip()"
+              {{ 'disabled' if uploads_left==0 else '' }}>
+        <span id="btnText">⚡ Extract &amp; Generate Table</span>
+        <div class="spinner" id="spinner"></div>
+      </button>
+      <div id="status"></div>
+    </div>
+  </div>
+
+  <div class="card" id="how">
+    <div class="card-head">
+      <div class="icon" style="background:#F0FDF4">✅</div>
+      <div><h2>How It Works</h2><p>Automatic extraction from all major receipts</p></div>
+    </div>
+    <div class="card-body">
+      <ol class="steps">
+        <li>
+          <strong>Prepare your ZIP</strong>
+          <span>Put all statutory payment PDFs in one folder and zip it. Any mix of EPF, ESIC, GST, TDS, Electricity is fine.</span>
+        </li>
+        <li>
+          <strong>Upload the ZIP</strong>
+          <span>Drop the ZIP file here. Each PDF is read and identified automatically — no renaming needed.</span>
+        </li>
+        <li>
+          <strong>Review on screen</strong>
+          <span>Extracted records appear in a compliance table: Particulars, Month, Amount, Date Paid, Remarks.</span>
+        </li>
+        <li>
+          <strong>Download Excel</strong>
+          <span>Download the formatted compliance register as a .xlsx file — ready to present or file.</span>
+        </li>
+      </ol>
+    </div>
+  </div>
+</div>
+
+<!-- Results Section -->
+<div id="resultSection">
+  <div class="result-header">
+    <h2>📋 Extracted Compliance Records</h2>
+    <button class="dl-btn" onclick="downloadExcel()">⬇ Download Excel</button>
+  </div>
+  <div class="table-wrap">
+    <table id="resultTable">
+      <thead>
+        <tr>
+          <th>Particulars</th>
+          <th>Month</th>
+          <th>Amount (Rs.)</th>
+          <th>Date Paid</th>
+          <th>Remarks</th>
+        </tr>
+      </thead>
+      <tbody id="resultBody"></tbody>
+    </table>
+  </div>
+  <div id="warnBox" class="warn-box" style="display:none"></div>
+</div>
+
+<div class="feats">
+  <div class="feat"><div class="fi">📄</div><h3>EPF Challans</h3><p>EPFO Payment Confirmation Receipts — wage month, total amount, confirmation date.</p></div>
+  <div class="feat"><div class="fi">🏥</div><h3>ESIC Challans</h3><p>ESIC Online Challan — challan period, amount paid, submitted date.</p></div>
+  <div class="feat"><div class="fi">📊</div><h3>GST Receipts</h3><p>GST Payment Receipts — CGST/SGST/IGST total, deposit date, tax period.</p></div>
+  <div class="feat"><div class="fi">💼</div><h3>TDS Challans</h3><p>Income Tax Dept 281N Challan — section, amount, date of deposit.</p></div>
+</div>
+
+<footer>
+  <div class="ft-bottom" style="justify-content:center;background:#071812;border-top:1px solid #0D2E24;padding:14px 24px">
+    <span class="ft-bottom-left">©2026 CA Toolkit · All Rights Reserved</span>
+  </div>
+</footer>
+<a href="https://wa.me/918427651580" target="_blank" class="wa-float" title="WhatsApp Support">
+  <svg viewBox="0 0 24 24"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg>
+</a>
+
+<script>
+let _extractedRows = [];
+let _dlBlob = null;
+
+// Dropzone
+const dz = document.getElementById('dropzone');
+const fi = document.getElementById('zipFile');
+const dzf = document.getElementById('dzFile');
+
+fi.addEventListener('change', () => {
+  if (fi.files[0]) { dzf.textContent = '✓ ' + fi.files[0].name; dzf.style.display = 'block'; }
+});
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('drag'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('drag'));
+dz.addEventListener('drop', e => {
+  e.preventDefault(); dz.classList.remove('drag');
+  const dt = e.dataTransfer;
+  if (dt.files[0]) {
+    // Create a DataTransfer to set the file input
+    const dtNew = new DataTransfer();
+    dtNew.items.add(dt.files[0]);
+    fi.files = dtNew.files;
+    dzf.textContent = '✓ ' + dt.files[0].name;
+    dzf.style.display = 'block';
+  }
+});
+// Allow clicking dropzone to open file picker
+dz.addEventListener('click', (e) => {
+  if (e.target === fi) return;
+  fi.click();
+});
+
+function showStatus(msg, type) {
+  const s = document.getElementById('status');
+  s.textContent = msg;
+  s.className = type;
+  s.style.display = 'block';
+}
+
+function processZip() {
+  const file = fi.files[0];
+  if (!file) { showStatus('Please select a ZIP file first.', 'error'); return; }
+  if (!file.name.toLowerCase().endsWith('.zip')) {
+    showStatus('Please upload a .zip file.', 'error'); return;
+  }
+
+  const btn = document.getElementById('processBtn');
+  const btnText = document.getElementById('btnText');
+  const spinner = document.getElementById('spinner');
+  btn.disabled = true;
+  btnText.textContent = 'Extracting...';
+  spinner.style.display = 'block';
+  document.getElementById('resultSection').style.display = 'none';
+  showStatus('Reading PDFs from ZIP...', 'success');
+
+  const fd = new FormData();
+  fd.append('zip_file', file);
+
+  fetch('/process-compliance', { method: 'POST', body: fd })
+    .then(r => r.json())
+    .then(data => {
+      btn.disabled = false;
+      btnText.textContent = '⚡ Extract & Generate Table';
+      spinner.style.display = 'none';
+
+      if (data.status === 'error') {
+        showStatus('❌ ' + (data.message || 'Error processing file.'), 'error');
+        return;
+      }
+
+      showStatus('✅ ' + data.message, 'success');
+      _extractedRows = data.rows || [];
+      _dlBlob = data.excel_b64 ? _b64toBlob(data.excel_b64,
+        'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet') : null;
+      renderTable(_extractedRows);
+
+      if (data.errors && data.errors.length) {
+        const wb = document.getElementById('warnBox');
+        wb.innerHTML = '⚠️ <strong>Some files had issues:</strong><br>' +
+          data.errors.map(e => '• ' + e).join('<br>');
+        wb.style.display = 'block';
+      } else {
+        document.getElementById('warnBox').style.display = 'none';
+      }
+    })
+    .catch(err => {
+      btn.disabled = false;
+      btnText.textContent = '⚡ Extract & Generate Table';
+      spinner.style.display = 'none';
+      showStatus('❌ Network error: ' + err, 'error');
+    });
+}
+
+const TAG_CLASSES = {
+  'EPF': 'tag-epi', 'ESI': 'tag-esic', 'GST': 'tag-gst',
+  'TDS': 'tag-tds', 'Electricity': 'tag-elec',
+};
+
+function renderTable(rows) {
+  const tbody = document.getElementById('resultBody');
+  tbody.innerHTML = '';
+  if (!rows.length) {
+    tbody.innerHTML = '<tr><td colspan="5" style="color:var(--muted);padding:20px">No records extracted.</td></tr>';
+  } else {
+    rows.forEach(r => {
+      const cls = TAG_CLASSES[r.particulars] || '';
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td><span class="${cls}">${r.particulars || ''}</span></td>
+        <td>${r.month || ''}</td>
+        <td style="font-weight:600">${r.amount || ''}</td>
+        <td>${r.date_paid || ''}</td>
+        <td style="text-align:left">${r.remarks || ''}</td>
+      `;
+      tbody.appendChild(tr);
+    });
+  }
+  document.getElementById('resultSection').style.display = 'block';
+  document.getElementById('resultSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function downloadExcel() {
+  if (_dlBlob) {
+    const url = URL.createObjectURL(_dlBlob);
+    const a = document.createElement('a'); a.href = url;
+    a.download = 'Compliance_Register.xlsx'; a.click();
+    URL.revokeObjectURL(url);
+  }
+}
+
+function _b64toBlob(b64, type) {
+  const bin = atob(b64);
+  const arr = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) arr[i] = bin.charCodeAt(i);
+  return new Blob([arr], { type });
+}
+</script>
+</body></html>"""
+
+
+@app.route("/tool/compliance-tracker")
+@login_required
+def compliance_tracker_page():
+    uid = session["uid"]
+    u = get_user_by_id(uid)
+    if not u:
+        return redirect(url_for("login_page"))
+    rem = uploads_remaining(u)
+    tot = u["uploads_total"]
+    used = u["uploads_used"]
+    bar_pct = min(100, int((used / tot * 100))) if tot else 0
+    plan = u["plan"]
+    return render_template_string(
+        COMPLIANCE_T,
+        username=u["username"],
+        plan=plan,
+        plan_label=PLANS.get(plan, {}).get("label", plan),
+        is_admin=bool(u["is_admin"]),
+        uploads_left=rem,
+        uploads_used=used,
+        uploads_total=tot,
+        bar_pct=bar_pct,
+        validity_end=u.get("validity_end") or "",
+        contact_email=CONTACT_EMAIL,
+        contact_upi=CONTACT_UPI,
+    )
+
+
+@app.route("/process-compliance", methods=["POST"])
+@login_required
+def process_compliance():
+    import base64
+    from compliance_processor import process_compliance_zip, generate_excel
+
+    uid = session["uid"]
+    u = get_user_by_id(uid)
+    if not u:
+        return jsonify({"status": "error", "message": "User not found."})
+
+    rem = uploads_remaining(u)
+    if rem <= 0:
+        return jsonify({"status": "error",
+                        "message": "No uploads remaining. Please recharge your plan."})
+
+    if "zip_file" not in request.files:
+        return jsonify({"status": "error", "message": "No file uploaded."})
+
+    f = request.files["zip_file"]
+    if not f.filename.lower().endswith(".zip"):
+        return jsonify({"status": "error", "message": "Please upload a .zip file."})
+
+    try:
+        zip_bytes = f.read()
+        if len(zip_bytes) > 20 * 1024 * 1024:
+            return jsonify({"status": "error", "message": "File too large (max 20 MB)."})
+
+        result = process_compliance_zip(zip_bytes)
+
+        if result["status"] == "success" and result["rows"]:
+            # Generate Excel
+            excel_bytes = generate_excel(result["rows"])
+            excel_b64 = base64.b64encode(excel_bytes).decode() if excel_bytes else None
+            result["excel_b64"] = excel_b64
+
+            # Deduct one upload
+            log_usage(uid, f.filename)
+
+        return jsonify(result)
+
+    except Exception as e:
+        return jsonify({"status": "error", "message": f"Server error: {e}"})
+      
 @app.route("/tool/tax-calculator")
 def tool_tax_calculator():
     if "uid" in session:
