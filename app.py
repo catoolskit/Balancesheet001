@@ -7024,6 +7024,8 @@ dz.addEventListener('drop', e => {
 // Allow clicking dropzone to open file picker
 dz.addEventListener('click', (e) => {
   if (e.target === fi) return;
+  e.preventDefault();
+  e.stopPropagation();
   fi.click();
 });
 
@@ -7720,7 +7722,7 @@ label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;lett
 .hint{font-size:11px;color:var(--muted);margin-top:4px}
 .dropzone{border:2px dashed var(--border);border-radius:10px;padding:24px 14px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--bg)}
 .dropzone:hover,.dropzone.drag{border-color:var(--brand);background:#EFF6FF}
-.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;pointer-events:none}
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
 .dz-icon{font-size:26px;margin-bottom:6px}
 .dz-text{font-size:12px;color:var(--muted)}
 .dz-text strong{color:var(--brand)}
