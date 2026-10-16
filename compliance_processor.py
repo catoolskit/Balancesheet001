@@ -134,9 +134,7 @@ def _detect_doc_type(text):
         return "GST"
     if "income tax department" in t and ("challan receipt" in t or "tds/tcs" in t or "281" in t):
         return "TDS"
-    if ("bill of supply for electricity" in t or "bses" in t or "bypl" in t or
-            "electricity" in t and ("meter no" in t or "billing details" in t)):
-        return "ELECTRICITY"
+   
     return "UNKNOWN"
 
 
@@ -316,77 +314,12 @@ def _parse_tds(text):
     return rows
 
 
-def _parse_electricity(text):
-    """
-    Parse BSES/BYPL electricity bill.
-    Extracts: Bill Month, Bill Amount Payable, Due Date
-    """
-    rows = []
-
-    # Bill Amount Payable (Net Amount)
-    # BSES format: "₹20330.00" or "20325.13"
-    amt_m = re.search(r'Net Amount\s*Payable\s*.*?([\d,]+\.\d{2})', text)
-    if not amt_m:
-        # Try "Bill Amount Payable ₹20330.00"
-        amt_m = re.search(r'Bill Amount Payable.*?(\d{1,3}(?:,\d{3})*(?:\.\d{2})?)', text)
-    if not amt_m:
-        # Try "₹ 20330.00" near "payable"
-        amt_m = re.search(r'[₹\`][\s]*([\d,]+(?:\.\d{2})?)', text)
-    amount = ""
-    if amt_m:
-        raw = amt_m.group(1).replace(',', '').strip()
-        try:
-            n = float(raw)
-            amount = f"{n:,.2f}"
-        except Exception:
-            amount = raw
-
-    # Bill Month
-    bm_m = re.search(r'Bill Month\s*[:\-]?\s*([A-Z]{3}[- ]\d{2,4})', text)
-    if not bm_m:
-        bm_m = re.search(r'Bill Month\s*[:\-]?\s*([A-Za-z]+-\d{2,4})', text, re.IGNORECASE)
-    month = ""
-    if bm_m:
-        month_str = bm_m.group(1).strip()
-        # "SEP-26" → "September'26"
-        m2 = re.match(r'([A-Za-z]+)[- ](\d{2,4})', month_str)
-        if m2:
-            abbr = m2.group(1)[:3].title()
-            yr = m2.group(2)[-2:]
-            month_map = {
-                'Jan': 'January', 'Feb': 'February', 'Mar': 'March',
-                'Apr': 'April', 'May': 'May', 'Jun': 'June',
-                'Jul': 'July', 'Aug': 'August', 'Sep': 'September',
-                'Oct': 'October', 'Nov': 'November', 'Dec': 'December',
-            }
-            full_mon = month_map.get(abbr, abbr)
-            month = f"{full_mon}'{yr}"
-        else:
-            month = month_str
-
-    # Due Date as "date paid" (the due date is the relevant date for electricity)
-    due_m = re.search(r'Due Date.*?(\d{2}[- /]\d{2}[- /]\d{4})', text)
-    if not due_m:
-        due_m = re.search(r'(\d{2}[- ]\d{2}[- ]\d{4})', text)
-    date_paid = _fmt_date(due_m.group(1)) if due_m else ""
-
-    if amount or month:
-        rows.append({
-            "particulars": "Electricity",
-            "month": month,
-            "amount": amount,
-            "date_paid": date_paid,
-            "remarks": "Amt. paid before Due Date.",
-        })
-    return rows
-
-
 # ═══════════════════════════════════════════════════════════════════════
 #  MAIN ENTRY POINT
 # ═══════════════════════════════════════════════════════════════════════
 
 # Priority order for the output table (matches typical compliance register)
-_PARTICULARS_ORDER = ["ESI", "EPF", "TDS", "GST", "Electricity"]
+_PARTICULARS_ORDER = ["ESI", "EPF", "TDS", "GST"]
 
 
 def process_compliance_zip(zip_bytes):
