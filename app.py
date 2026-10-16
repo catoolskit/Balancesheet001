@@ -6932,17 +6932,19 @@ tbody tr:hover{background:var(--brand-l)}
                letter-spacing:.04em;color:var(--muted);margin-bottom:6px">
           Upload ZIP File (.zip)
         </label>
-        <div class="dropzone" id="dropzone">
-          <input type="file" id="zipFile" accept=".zip" {{ 'disabled' if uploads_left==0 else '' }}/>
-          <div class="dz-icon">🗂️</div>
-          <div class="dz-text"><strong>Click to browse</strong> or drag &amp; drop</div>
-          <div class="dz-text" style="margin-top:3px">.zip containing PDF receipts · Max 20 MB</div>
-          <div class="dz-text" style="margin-top:3px;font-size:11px;color:var(--muted)">
-            EPF · ESIC · GST · TDS
-          </div>
-          <div class="dz-file" id="dzFile"></div>
-        </div>
-      </div>
+        <label for="zipFile" class="dropzone" id="dropzone"
+       style="cursor:pointer;display:block">
+  <div class="dz-icon">🗂️</div>
+  <div class="dz-text"><strong>Click to browse</strong> or drag &amp; drop</div>
+  <div class="dz-text" style="margin-top:3px">.zip containing PDF receipts · Max 20 MB</div>
+  <div class="dz-text" style="margin-top:3px;font-size:11px;color:var(--muted)">
+    EPF · ESIC · GST · TDS
+  </div>
+  <div class="dz-file" id="dzFile"></div>
+</label>
+<input type="file" id="zipFile" accept=".zip"
+       style="display:none"
+       {{ 'disabled' if uploads_left==0 else '' }}/>
 
       <button class="btn" id="processBtn" onclick="processZip()"
               {{ 'disabled' if uploads_left==0 else '' }}>
@@ -7020,13 +7022,6 @@ dz.addEventListener('drop', e => {
     dzf.textContent = '✓ ' + dt.files[0].name;
     dzf.style.display = 'block';
   }
-});
-// Allow clicking dropzone to open file picker
-dz.addEventListener('click', (e) => {
-  if (e.target === fi) return;
-  e.preventDefault();
-  e.stopPropagation();
-  fi.click();
 });
 
 function showStatus(msg, type) {
@@ -7722,7 +7717,7 @@ label{display:block;font-size:11px;font-weight:600;text-transform:uppercase;lett
 .hint{font-size:11px;color:var(--muted);margin-top:4px}
 .dropzone{border:2px dashed var(--border);border-radius:10px;padding:24px 14px;text-align:center;cursor:pointer;transition:all .2s;position:relative;background:var(--bg)}
 .dropzone:hover,.dropzone.drag{border-color:var(--brand);background:#EFF6FF}
-.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;}
+.dropzone input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%;pointer-events:none}
 .dz-icon{font-size:26px;margin-bottom:6px}
 .dz-text{font-size:12px;color:var(--muted)}
 .dz-text strong{color:var(--brand)}
