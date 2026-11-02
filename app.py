@@ -1087,11 +1087,10 @@ DASHBOARD_T = """<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8">
 /* ── COMING SOON CARD ───────────────────────────────────────────── */
 .tool-card.coming{border-style:dashed;border-color:#C6F0E8}
 
-/* ── STATS ROW ──────────────────────────────────────────────────── */
-.stats-row{background:linear-gradient(135deg,#042F2E 0%,#0D9488 60%,#134E4A 100%);
-  padding:28px 24px;margin:0}
-.stats-inner{max-width:960px;margin:0 auto;
-  display:grid;grid-template-columns:repeat(4,1fr);gap:0;text-align:center}
+/* — STATS ROW ——————————————————————————— */
+.stats-row{background:linear-gradient(135deg,#042F2E 0%,#0D9488 60%,#134E4A 100%);padding:28px 24px;margin:0;width:100vw;position:relative;left:50%;margin-left:-50vw}
+footer{width:100vw;position:relative;left:50%;margin-left:-50vw}
+.stats-inner{max-width:960px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:0;text-align:center}
 .stat-item{padding:10px 0;border-right:1px solid rgba(255,255,255,.12)}
 .stat-item:last-child{border:none}
 .stat-icon{font-size:20px;margin-bottom:6px;display:block}
