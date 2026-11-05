@@ -8402,16 +8402,23 @@ style="display:block; max-width:900px; margin:0 auto; padding:2rem 1rem;"
         </select>
       </div>
     </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
-      <div>
-        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Excel (Books)</label>
-        <input type="file" name="books_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
-      </div>
-      <div>
-        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">GSTR-2B Excel (Portal)</label>
-        <input type="file" name="b2b_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
-      </div>
-    </div>
+   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+  <div>
+    <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Excel Q1 (Books)</label>
+    <input type="file" name="books_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
+    <p style="font-size:0.75rem;color:#6b7280;margin-top:0.3rem;">Apr to Jun</p>
+  </div>
+  <div>
+    <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Excel Q2 (optional)</label>
+    <input type="file" name="books_file2" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
+    <p style="font-size:0.75rem;color:#6b7280;margin-top:0.3rem;">Jul to Sep — if 2B is H1</p>
+  </div>
+  <div>
+    <label style="font-weight:600;display:block;margin-bottom:0.4rem;">GSTR-2B Excel (Portal)</label>
+    <input type="file" name="b2b_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
+    <p style="font-size:0.75rem;color:#6b7280;margin-top:0.3rem;">Download from GST Portal</p>
+  </div>
+</div>
     <div style="text-align:center;">
       <button type="submit" style="background:#16a34a;color:#fff;border:none;border-radius:10px;padding:0.8rem 3rem;font-size:1rem;font-weight:700;cursor:pointer;">
         Reconcile Now — Download Excel
