@@ -12323,19 +12323,19 @@ def purchase_2b_recon():
         if header_row_2b is None:
             return jsonify({'error': 'Could not find header row in GSTR-2B Excel. Expected: GSTIN of supplier, Invoice number, Taxable Value (₹) etc.'}), 400
 
-       b2b_df.columns = b2b_df.iloc[header_row_2b]
-       sub_row = b2b_df.iloc[header_row_2b + 1]
-       new_cols = []
-       for h, s in zip(b2b_df.columns, sub_row):
-           h = str(h).strip()
-           s = str(s).strip()
-           if s and s.lower() != 'nan':
-              new_cols.append(h + ' ' + s)
-           else:
-               new_cols.append(h)
-       b2b_df.columns = new_cols
-       b2b_df = b2b_df.iloc[header_row_2b + 2:].reset_index(drop=True)
-       b2b_df.columns = [str(c).strip() for c in b2b_df.columns]
+      b2b_df.columns = b2b_df.iloc[header_row_2b]
+        sub_row = b2b_df.iloc[header_row_2b + 1]
+        new_cols = []
+        for h, s in zip(b2b_df.columns, sub_row):
+            h = str(h).strip()
+            s = str(s).strip()
+            if s and s.lower() != 'nan':
+                new_cols.append(h + ' ' + s)
+            else:
+                new_cols.append(h)
+        b2b_df.columns = new_cols
+        b2b_df = b2b_df.iloc[header_row_2b + 2:].reset_index(drop=True)
+        b2b_df.columns = [str(c).strip() for c in b2b_df.columns]
 
         col_map_2b = {}
         for c in b2b_df.columns:
