@@ -7748,7 +7748,7 @@ document.getElementById('pane-sales').style.display=t==='s'?'block':'none';
 document.getElementById('pane-purchase').style.display=t==='p'?'block':'none';
 document.getElementById('tab-s').style.background=t==='s'?'#0d9488':'#fff';
 document.getElementById('tab-s').style.color=t==='s'?'#fff':'#6b7280';
-document.getElementById('tab-p').style.background=t==='p'?'#16a34a':'#fff';
+document.getElementById('tab-p').style.background=t==='p'?'#0d9488':'#fff';
 document.getElementById('tab-p').style.color=t==='p'?'#fff':'#6b7280';
 }
 </script>
