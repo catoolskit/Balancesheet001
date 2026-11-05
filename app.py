@@ -12229,9 +12229,13 @@ init_db()
 @app.route('/tool/purchase-2b-reconciliation', methods=['GET', 'POST'])
 def purchase_2b_recon():
     if request.method == 'GET':
-        return redirect(url_for('gst_reconciliation'))
+        return redirect(url_for('tool_gst_reconciliation'))
 
     import pandas as pd
+    import io
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill, Alignment, Border, Side
+    from openpyxl.utils import get_column_letter
 
     try:
         quarter    = request.form.get('quarter', 'Q1')
@@ -12242,9 +12246,8 @@ def purchase_2b_recon():
         if not books_file or not b2b_file:
             return jsonify({'error': 'Both files are required.'}), 400
 
-        # ── Read Purchase Books Excel ─────────────────────────────────────
+        # ── Read Purchase Books ───────────────────────────────────────────
         books_df = pd.read_excel(books_file, header=None)
-
         header_row = None
         for i, row in books_df.iterrows():
             if any(str(c).strip().upper() in [
@@ -12252,9 +12255,8 @@ def purchase_2b_recon():
             ] for c in row.values):
                 header_row = i
                 break
-
         if header_row is None:
-            return jsonify({'error': 'Could not find header row in Purchase Excel. Expected: GSTIN of Supplier, Invoice Number, Taxable Value etc.'}), 400
+            return jsonify({'error': 'Could not find header row in Purchase Excel.'}), 400
 
         books_df.columns = books_df.iloc[header_row]
         books_df = books_df.iloc[header_row + 1:].reset_index(drop=True)
@@ -12263,28 +12265,19 @@ def purchase_2b_recon():
         col_map_books = {}
         for c in books_df.columns:
             cu = c.upper()
-            if 'GSTIN' in cu and 'SUPPLIER' in cu:
-                col_map_books['gstin'] = c
-            elif cu == 'GSTIN':
-                col_map_books.setdefault('gstin', c)
-            elif 'INVOICE' in cu and ('NO' in cu or 'NUM' in cu):
-                col_map_books['inv_no'] = c
-            elif 'INVOICE' in cu and 'DATE' in cu:
-                col_map_books['inv_date'] = c
-            elif ('SUPPLIER' in cu or 'NAME' in cu) and 'GSTIN' not in cu:
-                col_map_books['supplier'] = c
-            elif 'TAXABLE' in cu and 'VALUE' in cu:
-                col_map_books['taxable'] = c
-            elif 'INTEGRATED' in cu:
-                col_map_books['igst'] = c
-            elif 'CENTRAL' in cu:
-                col_map_books['cgst'] = c
-            elif 'STATE' in cu or 'UT TAX' in cu:
-                col_map_books['sgst'] = c
+            if 'GSTIN' in cu and 'SUPPLIER' in cu: col_map_books['gstin'] = c
+            elif cu == 'GSTIN': col_map_books.setdefault('gstin', c)
+            elif 'INVOICE' in cu and ('NO' in cu or 'NUM' in cu): col_map_books['inv_no'] = c
+            elif 'INVOICE' in cu and 'DATE' in cu: col_map_books['inv_date'] = c
+            elif ('SUPPLIER' in cu or 'NAME' in cu) and 'GSTIN' not in cu: col_map_books['supplier'] = c
+            elif 'TAXABLE' in cu and 'VALUE' in cu: col_map_books['taxable'] = c
+            elif 'INTEGRATED' in cu: col_map_books['igst'] = c
+            elif 'CENTRAL' in cu: col_map_books['cgst'] = c
+            elif 'STATE' in cu or 'UT TAX' in cu: col_map_books['sgst'] = c
 
         missing = [k for k in ['gstin', 'inv_no', 'taxable'] if k not in col_map_books]
         if missing:
-            return jsonify({'error': f'Purchase Excel missing columns for: {missing}. Found: {list(books_df.columns)}'}), 400
+            return jsonify({'error': f'Purchase Excel missing: {missing}. Found: {list(books_df.columns)}'}), 400
 
         books_clean = books_df[[v for v in col_map_books.values()]].copy()
         books_clean.columns = list(col_map_books.keys())
@@ -12294,23 +12287,15 @@ def purchase_2b_recon():
         books_clean['inv_no']  = books_clean['inv_no'].astype(str).str.strip().str.upper()
         books_clean['taxable'] = pd.to_numeric(books_clean['taxable'], errors='coerce').fillna(0)
         for col in ['igst', 'cgst', 'sgst']:
-            if col in books_clean.columns:
-                books_clean[col] = pd.to_numeric(books_clean[col], errors='coerce').fillna(0)
-            else:
-                books_clean[col] = 0.0
+            books_clean[col] = pd.to_numeric(books_clean.get(col, 0), errors='coerce').fillna(0) if col in books_clean.columns else 0.0
 
         agg_dict = {'taxable': 'sum', 'igst': 'sum', 'cgst': 'sum', 'sgst': 'sum'}
-        if 'supplier' in books_clean.columns:
-            agg_dict['supplier'] = 'first'
+        if 'supplier' in books_clean.columns: agg_dict['supplier'] = 'first'
         books_agg = books_clean.groupby(['gstin', 'inv_no']).agg(agg_dict).reset_index()
-        books_agg.rename(columns={
-            'taxable': 'taxable_books', 'igst': 'igst_books',
-            'cgst': 'cgst_books', 'sgst': 'sgst_books'
-        }, inplace=True)
+        books_agg.rename(columns={'taxable': 'taxable_books', 'igst': 'igst_books', 'cgst': 'cgst_books', 'sgst': 'sgst_books'}, inplace=True)
 
-        # ── Read GSTR-2B Excel ────────────────────────────────────────────
+        # ── Read GSTR-2B ──────────────────────────────────────────────────
         b2b_df = pd.read_excel(b2b_file, header=None)
-
         header_row_2b = None
         for i, row in b2b_df.iterrows():
             if any(str(c).strip().upper() in [
@@ -12319,37 +12304,28 @@ def purchase_2b_recon():
             ] for c in row.values):
                 header_row_2b = i
                 break
-
         if header_row_2b is None:
-            return jsonify({'error': 'Could not find header row in GSTR-2B Excel. Expected: GSTIN of supplier, Invoice number, Taxable Value (₹) etc.'}), 400
+            return jsonify({'error': 'Could not find header row in GSTR-2B Excel.'}), 400
 
         b2b_df.columns = b2b_df.iloc[header_row_2b]
         b2b_df = b2b_df.iloc[header_row_2b + 1:].reset_index(drop=True)
         b2b_df.columns = [str(c).strip() for c in b2b_df.columns]
-        
+
         col_map_2b = {}
         for c in b2b_df.columns:
             cu = c.upper()
-            if 'GSTIN' in cu:
-                col_map_2b.setdefault('gstin', c)
-            if 'INVOICE' in cu:
-                col_map_2b['inv_no'] = c
-            if 'TRADE' in cu or 'LEGAL' in cu:
-                col_map_2b['supplier'] = c
-            if 'TAXABLE' in cu and 'VALUE' in cu:
-                col_map_2b['taxable'] = c
-            if 'INTEGRATED' in cu:
-                col_map_2b['igst'] = c
-            if 'CENTRAL' in cu:
-                col_map_2b['cgst'] = c
-            if ('STATE' in cu or 'UT TAX' in cu) and 'GSTIN' not in cu:
-                col_map_2b['sgst'] = c
-            if 'ITC' in cu and 'AVAIL' in cu:
-                col_map_2b['itc'] = c
+            if 'GSTIN' in cu: col_map_2b.setdefault('gstin', c)
+            if 'INVOICE' in cu: col_map_2b.setdefault('inv_no', c)
+            if 'TRADE' in cu or 'LEGAL' in cu: col_map_2b['supplier'] = c
+            if 'TAXABLE' in cu and 'VALUE' in cu: col_map_2b['taxable'] = c
+            if 'INTEGRATED' in cu: col_map_2b['igst'] = c
+            if 'CENTRAL' in cu: col_map_2b['cgst'] = c
+            if ('STATE' in cu or 'UT TAX' in cu) and 'GSTIN' not in cu: col_map_2b['sgst'] = c
+            if 'ITC' in cu and 'AVAIL' in cu: col_map_2b['itc'] = c
 
         missing_2b = [k for k in ['gstin', 'inv_no', 'taxable'] if k not in col_map_2b]
         if missing_2b:
-            return jsonify({'error': f'GSTR-2B Excel missing columns for: {missing_2b}. Found: {list(b2b_df.columns)}'}), 400
+            return jsonify({'error': f'GSTR-2B missing: {missing_2b}. Found: {list(b2b_df.columns)}'}), 400
 
         b2b_clean = b2b_df[[v for v in col_map_2b.values()]].copy()
         b2b_clean.columns = list(col_map_2b.keys())
@@ -12359,89 +12335,141 @@ def purchase_2b_recon():
         b2b_clean['inv_no']  = b2b_clean['inv_no'].astype(str).str.strip().str.upper()
         b2b_clean['taxable'] = pd.to_numeric(b2b_clean['taxable'], errors='coerce').fillna(0)
         for col in ['igst', 'cgst', 'sgst']:
-            if col in b2b_clean.columns:
-                b2b_clean[col] = pd.to_numeric(b2b_clean[col], errors='coerce').fillna(0)
-            else:
-                b2b_clean[col] = 0.0
+            b2b_clean[col] = pd.to_numeric(b2b_clean[col], errors='coerce').fillna(0) if col in b2b_clean.columns else 0.0
 
         agg_dict_2b = {'taxable': 'sum', 'igst': 'sum', 'cgst': 'sum', 'sgst': 'sum'}
-        if 'supplier' in b2b_clean.columns:
-            agg_dict_2b['supplier'] = 'first'
-        if 'itc' in b2b_clean.columns:
-            agg_dict_2b['itc'] = 'first'
+        if 'supplier' in b2b_clean.columns: agg_dict_2b['supplier'] = 'first'
+        if 'itc' in b2b_clean.columns: agg_dict_2b['itc'] = 'first'
         b2b_agg = b2b_clean.groupby(['gstin', 'inv_no']).agg(agg_dict_2b).reset_index()
-        b2b_agg.rename(columns={
-            'taxable': 'taxable_2b', 'igst': 'igst_2b',
-            'cgst': 'cgst_2b', 'sgst': 'sgst_2b'
-        }, inplace=True)
+        b2b_agg.rename(columns={'taxable': 'taxable_2b', 'igst': 'igst_2b', 'cgst': 'cgst_2b', 'sgst': 'sgst_2b'}, inplace=True)
 
         # ── Merge ─────────────────────────────────────────────────────────
         merged = pd.merge(books_agg, b2b_agg, on=['gstin', 'inv_no'], how='outer', indicator=True)
-        merged['status'] = merged['_merge'].map({
-            'both': 'Matched', 'left_only': 'Books Only', 'right_only': '2B Only'
-        })
-
-        for col in ['taxable_books','taxable_2b','igst_books','cgst_books','sgst_books',
-                    'igst_2b','cgst_2b','sgst_2b']:
-            if col not in merged.columns:
-                merged[col] = 0.0
+        merged['status'] = merged['_merge'].map({'both': 'Matched', 'left_only': 'Books Only', 'right_only': '2B Only'})
+        for col in ['taxable_books','taxable_2b','igst_books','cgst_books','sgst_books','igst_2b','cgst_2b','sgst_2b']:
+            if col not in merged.columns: merged[col] = 0.0
             merged[col] = pd.to_numeric(merged[col], errors='coerce').fillna(0)
-
         merged['diff_taxable'] = merged['taxable_books'] - merged['taxable_2b']
         merged['tax_books']    = merged['igst_books'] + merged['cgst_books'] + merged['sgst_books']
         merged['tax_2b']       = merged['igst_2b']    + merged['cgst_2b']    + merged['sgst_2b']
         merged['diff_tax']     = merged['tax_books'] - merged['tax_2b']
 
-        def get_supplier(row):
-            for key in ['supplier_x', 'supplier_y', 'supplier']:
-                v = str(row.get(key, ''))
-                if v.strip() not in ['', 'nan']:
-                    return v
+        def get_sup(row):
+            for k in ['supplier_x','supplier_y','supplier']:
+                v = str(row.get(k,''))
+                if v.strip() not in ['','nan']: return v
             return str(row['gstin'])
+        merged['sup'] = merged.apply(get_sup, axis=1)
 
-        merged['supplier_name'] = merged.apply(get_supplier, axis=1)
+        # ── Build Excel ───────────────────────────────────────────────────
+        wb = Workbook()
+        thin  = Side(style='thin', color='D0D0D0')
+        bdr   = Border(left=thin, right=thin, top=thin, bottom=thin)
+        ctr   = Alignment(horizontal='center', vertical='center')
+        rgt   = Alignment(horizontal='right',  vertical='center')
+        lft   = Alignment(horizontal='left',   vertical='center')
 
-        def fmt(v):
-            try: return round(float(v), 2)
-            except: return 0.0
+        def hf(color='1B5E20'): return Font(name='Arial', bold=True, size=10, color='FFFFFF')
+        def hfill(c): return PatternFill('solid', fgColor=c)
+        fill_m  = PatternFill('solid', fgColor='E8F5E9')
+        fill_bo = PatternFill('solid', fgColor='FFFDE7')
+        fill_2b = PatternFill('solid', fgColor='EDE7F6')
+        fill_rd = PatternFill('solid', fgColor='FFEBEE')
 
-        rows = []
-        for _, r in merged.iterrows():
-            rows.append({
-                'gstin':         str(r['gstin']),
-                'inv_no':        str(r['inv_no']),
-                'supplier':      str(r.get('supplier_name', r['gstin'])),
-                'status':        r['status'],
-                'taxable_books': fmt(r.get('taxable_books', 0)),
-                'taxable_2b':    fmt(r.get('taxable_2b', 0)),
-                'diff_taxable':  fmt(r.get('diff_taxable', 0)),
-                'tax_books':     fmt(r.get('tax_books', 0)),
-                'tax_2b':        fmt(r.get('tax_2b', 0)),
-                'diff_tax':      fmt(r.get('diff_tax', 0)),
-                'itc': str(r['itc']) if 'itc' in r.index and str(r.get('itc','')) not in ['','nan'] else 'Y',
-            })
+        COLS = ['GSTIN','Supplier','Invoice No','Status',
+                'Taxable (Books)','Taxable (2B)','Diff Taxable',
+                'Tax (Books)','Tax (2B)','Diff Tax','ITC']
+        WIDTHS = [32,28,22,14,16,16,14,14,14,12,6]
 
-        return jsonify({
-            'success': True,
-            'quarter': quarter,
-            'fy':      fy,
-            'summary': {
-                'total':        len(merged),
-                'matched':      int((merged['status'] == 'Matched').sum()),
-                'books_only':   int((merged['status'] == 'Books Only').sum()),
-                'b2b_only':     int((merged['status'] == '2B Only').sum()),
-                'taxable_diff': round(float(merged['diff_taxable'].sum()), 2),
-                'tax_diff':     round(float(merged['diff_tax'].sum()), 2),
-            },
-            'rows': rows,
-        })
+        def write_sheet(ws, data, row_fill, hdr_color):
+            for ci,(col,w) in enumerate(zip(COLS,WIDTHS),1):
+                c=ws.cell(1,ci,col); c.font=hf(); c.fill=hfill(hdr_color)
+                c.alignment=ctr; c.border=bdr
+                ws.column_dimensions[get_column_letter(ci)].width=w
+            ws.row_dimensions[1].height=20
+            ws.freeze_panes='A2'
+            for ri,(_,row) in enumerate(data.iterrows(),2):
+                itc_v = str(row.get('itc','Y')) if 'itc' in row.index and str(row.get('itc','')) not in ['','nan'] else 'Y'
+                vals=[str(row['gstin']),str(row['sup']),str(row['inv_no']),str(row['status']),
+                      round(float(row.get('taxable_books',0)),2),round(float(row.get('taxable_2b',0)),2),
+                      round(float(row.get('diff_taxable',0)),2),round(float(row.get('tax_books',0)),2),
+                      round(float(row.get('tax_2b',0)),2),round(float(row.get('diff_tax',0)),2),itc_v]
+                for ci,v in enumerate(vals,1):
+                    c=ws.cell(ri,ci,v); c.border=bdr
+                    c.fill=row_fill
+                    c.alignment=rgt if ci>=5 else lft
+                    if ci>=5 and isinstance(v,float): c.number_format='#,##0.00'
+                    if ci in(7,10) and isinstance(v,float) and abs(v)>0.5:
+                        c.fill=fill_rd; c.font=Font(name='Arial',bold=True,color='B71C1C',size=9)
+
+        # Sheet 1 — Summary
+        ws1=wb.active; ws1.title='Summary'
+        ws1.column_dimensions['A'].width=38; ws1.column_dimensions['B'].width=20
+        ws1['A1']=f'Purchase vs GSTR-2B — {fy} {quarter}'
+        ws1['A1'].font=Font(name='Arial',bold=True,size=14,color='0D6E56')
+        ws1.merge_cells('A1:B1'); ws1.row_dimensions[1].height=28
+        rows_s=[('',''),('Metric','Value'),
+                ('Total Invoices',len(merged)),
+                ('Matched',int((merged['status']=='Matched').sum())),
+                ('Books Only — ITC at risk',int((merged['status']=='Books Only').sum())),
+                ('2B Only — not in Books',int((merged['status']=='2B Only').sum())),
+                ('',''),
+                ('Taxable Value — Books',round(float(merged['taxable_books'].sum()),2)),
+                ('Taxable Value — 2B',round(float(merged['taxable_2b'].sum()),2)),
+                ('Taxable Difference',round(float(merged['diff_taxable'].sum()),2)),
+                ('',''),
+                ('Total Tax — Books',round(float(merged['tax_books'].sum()),2)),
+                ('Total Tax — 2B',round(float(merged['tax_2b'].sum()),2)),
+                ('Tax Difference (ITC impact)',round(float(merged['diff_tax'].sum()),2))]
+        for i,(l,v) in enumerate(rows_s,3):
+            ws1.cell(i,1,l); ws1.cell(i,2,v)
+            if l=='Metric':
+                for ci in [1,2]:
+                    ws1.cell(i,ci).fill=hfill('0D47A1')
+                    ws1.cell(i,ci).font=hf('0D47A1')
+            if 'risk' in l or 'Difference' in l or 'impact' in l:
+                ws1.cell(i,1).font=Font(name='Arial',bold=True,size=10,color='B71C1C')
+                ws1.cell(i,2).font=Font(name='Arial',bold=True,size=10,color='B71C1C')
+
+        # Sheets 2-5
+        ws2=wb.create_sheet('All Invoices')
+        for ci,(col,w) in enumerate(zip(COLS,WIDTHS),1):
+            c=ws2.cell(1,ci,col); c.font=hf(); c.fill=hfill('0D47A1')
+            c.alignment=ctr; c.border=bdr
+            ws2.column_dimensions[get_column_letter(ci)].width=w
+        ws2.row_dimensions[1].height=20; ws2.freeze_panes='A2'
+        for ri,(_,row) in enumerate(merged.iterrows(),2):
+            st=row['status']
+            rf=fill_m if st=='Matched' else fill_bo if st=='Books Only' else fill_2b
+            itc_v=str(row.get('itc','Y')) if 'itc' in row.index and str(row.get('itc','')) not in ['','nan'] else 'Y'
+            vals=[str(row['gstin']),str(row['sup']),str(row['inv_no']),st,
+                  round(float(row.get('taxable_books',0)),2),round(float(row.get('taxable_2b',0)),2),
+                  round(float(row.get('diff_taxable',0)),2),round(float(row.get('tax_books',0)),2),
+                  round(float(row.get('tax_2b',0)),2),round(float(row.get('diff_tax',0)),2),itc_v]
+            for ci,v in enumerate(vals,1):
+                c=ws2.cell(ri,ci,v); c.border=bdr; c.fill=rf
+                c.alignment=rgt if ci>=5 else lft
+                if ci>=5 and isinstance(v,float): c.number_format='#,##0.00'
+                if ci in(7,10) and isinstance(v,float) and abs(v)>0.5:
+                    c.fill=fill_rd; c.font=Font(name='Arial',bold=True,color='B71C1C',size=9)
+
+        ws3=wb.create_sheet('Books Only (ITC at Risk)')
+        write_sheet(ws3, merged[merged['status']=='Books Only'], fill_bo, 'E65100')
+
+        ws4=wb.create_sheet('2B Only (Missing in Books)')
+        write_sheet(ws4, merged[merged['status']=='2B Only'], fill_2b, '4A148C')
+
+        ws5=wb.create_sheet('Matched')
+        write_sheet(ws5, merged[merged['status']=='Matched'], fill_m, '1B5E20')
+
+        # Save & send
+        output=io.BytesIO()
+        wb.save(output); output.seek(0)
+        from flask import send_file as sf
+        return sf(output,
+                  download_name=f'Purchase_2B_Recon_{fy}_{quarter}.xlsx',
+                  as_attachment=True,
+                  mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet')
 
     except Exception as e:
         return jsonify({'error': str(e), 'trace': traceback.format_exc()}), 500
-
-
-# ─────────────────────────────────────────────────────────────────────────────
-
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)
