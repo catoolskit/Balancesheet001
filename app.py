@@ -7735,7 +7735,7 @@ function gstDragLeave(e,dzId){
   <p>Upload your month-wise sales summary and GSTR 3B PDFs to get an instant reconciliation report showing differences by state and month.</p>
 </div>
 <div style="display:flex;margin:0 0 2rem 0;border-radius:8px;overflow:hidden;border:0.5px solid #e5e7eb;">
-  <button id="tab-s" onclick="swTab('s')" style="flex:1;padding:0.75rem 2rem;border:none;font-size:1rem;font-weight:600;cursor:pointer;background:#16a34a;color:#fff;">
+  <button id="tab-s" onclick="swTab('s')" style="flex:1;padding:0.75rem 2rem;border:none;font-size:1rem;font-weight:600;cursor:pointer;background:#0d9488;color:#fff;">
     📊 Sales vs GSTR-3B
   </button>
   <button id="tab-p" onclick="swTab('p')" style="flex:1;padding:0.75rem 2rem;border:none;border-left:0.5px solid #e5e7eb;font-size:1rem;font-weight:600;cursor:pointer;background:#fff;color:#6b7280;">
@@ -7746,7 +7746,7 @@ function gstDragLeave(e,dzId){
 function swTab(t){
 document.getElementById('pane-sales').style.display=t==='s'?'block':'none';
 document.getElementById('pane-purchase').style.display=t==='p'?'block':'none';
-document.getElementById('tab-s').style.background=t==='s'?'#16a34a':'#fff';
+document.getElementById('tab-s').style.background=t==='s'?'#0d9488':'#fff';
 document.getElementById('tab-s').style.color=t==='s'?'#fff':'#6b7280';
 document.getElementById('tab-p').style.background=t==='p'?'#16a34a':'#fff';
 document.getElementById('tab-p').style.color=t==='p'?'#fff':'#6b7280';
@@ -12323,16 +12323,26 @@ def purchase_2b_recon():
         if header_row_2b is None:
             return jsonify({'error': 'Could not find header row in GSTR-2B Excel. Expected: GSTIN of supplier, Invoice number, Taxable Value (₹) etc.'}), 400
 
-        b2b_df.columns = b2b_df.iloc[header_row_2b]
-        b2b_df = b2b_df.iloc[header_row_2b + 1:].reset_index(drop=True)
-        b2b_df.columns = [str(c).strip() for c in b2b_df.columns]
+       b2b_df.columns = b2b_df.iloc[header_row_2b]
+       sub_row = b2b_df.iloc[header_row_2b + 1]
+       new_cols = []
+       for h, s in zip(b2b_df.columns, sub_row):
+           h = str(h).strip()
+           s = str(s).strip()
+           if s and s.lower() != 'nan':
+              new_cols.append(h + ' ' + s)
+           else:
+               new_cols.append(h)
+       b2b_df.columns = new_cols
+       b2b_df = b2b_df.iloc[header_row_2b + 2:].reset_index(drop=True)
+       b2b_df.columns = [str(c).strip() for c in b2b_df.columns]
 
         col_map_2b = {}
         for c in b2b_df.columns:
             cu = c.upper()
             if 'GSTIN' in cu:
                 col_map_2b.setdefault('gstin', c)
-            if 'INVOICE' in cu and ('NO' in cu or 'NUM' in cu):
+            if 'INVOICE' in cu and ('NO' in cu or 'NUM' in cu or 'NUMBER' in cu or 'DETAILS' in cu):
                 col_map_2b['inv_no'] = c
             if 'TRADE' in cu or 'LEGAL' in cu:
                 col_map_2b['supplier'] = c
