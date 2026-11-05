@@ -8402,23 +8402,59 @@ style="display:block; max-width:900px; margin:0 auto; padding:2rem 1rem;"
         </select>
       </div>
     </div>
-   <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
-  <div>
-    <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Excel Q1 (Books)</label>
-    <input type="file" name="books_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
-    <p style="font-size:0.75rem;color:#6b7280;margin-top:0.3rem;">Apr to Jun</p>
+   <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;">
+  <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-weight:600;color:#166534;">
+    <input type="checkbox" id="yearlyMode" onchange="toggleYearly()" style="width:16px;height:16px;cursor:pointer;">
+    📅 Yearly Mode — Upload full year Purchase + full year GSTR-2B (single file each)
+  </label>
+  <p style="font-size:0.75rem;color:#6b7280;margin:0.3rem 0 0 1.5rem;">Uncheck for quarter-wise upload (up to 4 purchase files + quarterly 2B)</p>
+</div>
+<div id="yearlyInputs" style="display:none;margin-bottom:1.5rem;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;">
+    <div>
+      <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Excel (Full Year)</label>
+      <input type="file" name="books_file_yr" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #0d9488;border-radius:8px;background:#f0fdfa;cursor:pointer;">
+      <p style="font-size:0.75rem;color:#6b7280;margin-top:0.3rem;">All 4 quarters in one sheet</p>
+    </div>
+    <div>
+      <label style="font-weight:600;display:block;margin-bottom:0.4rem;">GSTR-2B Excel (Full Year)</label>
+      <input type="file" name="b2b_file_yr" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #0d9488;border-radius:8px;background:#f0fdfa;cursor:pointer;">
+      <p style="font-size:0.75rem;color:#6b7280;margin-top:0.3rem;">Annual 2B from GST Portal</p>
+    </div>
   </div>
-  <div>
-    <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Excel Q2 (optional)</label>
-    <input type="file" name="books_file2" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
-    <p style="font-size:0.75rem;color:#6b7280;margin-top:0.3rem;">Jul to Sep — if 2B is H1</p>
+</div>
+<div id="quarterlyInputs" style="margin-bottom:1.5rem;">
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+    <div>
+      <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Q1 (Apr–Jun)</label>
+      <input type="file" name="books_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
+    </div>
+    <div>
+      <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Q2 (Jul–Sep) <span style="color:#6b7280;font-weight:400;">optional</span></label>
+      <input type="file" name="books_file2" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
+    </div>
+    <div>
+      <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Q3 (Oct–Dec) <span style="color:#6b7280;font-weight:400;">optional</span></label>
+      <input type="file" name="books_file3" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
+    </div>
+    <div>
+      <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Q4 (Jan–Mar) <span style="color:#6b7280;font-weight:400;">optional</span></label>
+      <input type="file" name="books_file4" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
+    </div>
   </div>
   <div>
     <label style="font-weight:600;display:block;margin-bottom:0.4rem;">GSTR-2B Excel (Portal)</label>
     <input type="file" name="b2b_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
-    <p style="font-size:0.75rem;color:#6b7280;margin-top:0.3rem;">Download from GST Portal</p>
+    <p style="font-size:0.75rem;color:#6b7280;margin-top:0.3rem;">Q1 / H1 / Full Year — tool auto-detects</p>
   </div>
 </div>
+<script>
+function toggleYearly(){
+  var y=document.getElementById('yearlyMode').checked;
+  document.getElementById('yearlyInputs').style.display=y?'block':'none';
+  document.getElementById('quarterlyInputs').style.display=y?'none':'block';
+}
+</script>
     <div style="text-align:center;">
       <button type="submit" style="background:#16a34a;color:#fff;border:none;border-radius:10px;padding:0.8rem 3rem;font-size:1rem;font-weight:700;cursor:pointer;">
         Reconcile Now — Download Excel
