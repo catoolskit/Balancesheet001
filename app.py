@@ -7740,8 +7740,8 @@ function gstDragLeave(e,dzId){
 </div>
 <script>
 function swTab(t){
-  document.getElementById('pane-sales').style.display=t==='s'?'':'none';
-  document.getElementById('pane-purchase').style.display=t==='p'?'':'none';
+  document.getElementById('pane-sales').style.display=t==='s'?'block':'none';
+  document.getElementById('pane-purchase').style.display=t==='p'?'block':'none';
   document.getElementById('tab-s').style.background=t==='s'?'#16a34a':'transparent';
   document.getElementById('tab-s').style.color=t==='s'?'#fff':'#6b7280';
   document.getElementById('tab-s').style.fontWeight=t==='s'?'700':'500';
