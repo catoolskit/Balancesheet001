@@ -12267,8 +12267,6 @@ if __name__ == "__main__":
 
 init_db()
 
-# ─── PURCHASE vs GSTR-2B RECONCILIATION (NEW) ────────────────────────────────
-
 @app.route('/tool/purchase-2b-reconciliation', methods=['GET', 'POST'])
 def purchase_2b_recon():
     if request.method == 'GET':
@@ -12281,14 +12279,25 @@ def purchase_2b_recon():
     from openpyxl.utils import get_column_letter
 
     try:
-        quarter    = request.form.get('quarter', 'Q1')
-        fy         = request.form.get('fy', '2026-27')
-        books_file  = request.files.get('books_file')
-        books_file2 = request.files.get('books_file2')
-        b2b_file   = request.files.get('b2b_file')
+        quarter      = request.form.get('quarter', 'Q1')
+        fy           = request.form.get('fy', '2026-27')
+        books_file   = request.files.get('books_file')
+        books_file2  = request.files.get('books_file2')
+        books_file3  = request.files.get('books_file3')
+        books_file4  = request.files.get('books_file4')
+        books_file_yr = request.files.get('books_file_yr')
+        b2b_file     = request.files.get('b2b_file')
+        b2b_file_yr  = request.files.get('b2b_file_yr')
 
-        if not books_file or not b2b_file:
-            return jsonify({'error': 'Both files are required.'}), 400
+        # Yearly mode override
+        if books_file_yr and books_file_yr.filename:
+            books_file = books_file_yr
+        if b2b_file_yr and b2b_file_yr.filename:
+            b2b_file = b2b_file_yr
+
+        any_books = any(f and f.filename for f in [books_file, books_file2, books_file3, books_file4])
+        if not any_books or not b2b_file:
+            return jsonify({'error': 'Please upload at least one Purchase file and the GSTR-2B file.'}), 400
 
         # ── Helper: read purchase Excel ───────────────────────────────────
         def read_purchase(f):
@@ -12307,16 +12316,18 @@ def purchase_2b_recon():
             df.columns = [str(c).strip() for c in df.columns]
             return df, None
 
-        books_df, err = read_purchase(books_file)
-        if err:
-            return jsonify({'error': err}), 400
+        # Read and combine all purchase files
+        books_df = None
+        for f in [books_file, books_file2, books_file3, books_file4]:
+            if f and f.filename:
+                df_tmp, err = read_purchase(f)
+                if err:
+                    return jsonify({'error': err}), 400
+                if df_tmp is not None:
+                    books_df = pd.concat([books_df, df_tmp], ignore_index=True) if books_df is not None else df_tmp
 
-        # Merge Q2 purchase file if provided
-        if books_file2 and books_file2.filename:
-            books_df2, _ = read_purchase(books_file2)
-            if books_df2 is not None:
-                # align columns
-                books_df = pd.concat([books_df, books_df2], ignore_index=True)
+        if books_df is None:
+            return jsonify({'error': 'Could not read any Purchase Excel file.'}), 400
 
         col_map_books = {}
         for c in books_df.columns:
@@ -12351,7 +12362,7 @@ def purchase_2b_recon():
         books_agg.rename(columns={'taxable': 'taxable_books', 'igst': 'igst_books',
                                    'cgst': 'cgst_books', 'sgst': 'sgst_books'}, inplace=True)
 
-        # ── Read GSTR-2B — try B2B sheet first (new format) ──────────────
+        # ── Read GSTR-2B ──────────────────────────────────────────────────
         try:
             b2b_df = pd.read_excel(b2b_file, sheet_name='B2B', header=None)
         except Exception:
@@ -12367,7 +12378,7 @@ def purchase_2b_recon():
                 header_row_2b = i
                 break
         if header_row_2b is None:
-            return jsonify({'error': 'Could not find header row in GSTR-2B Excel. Please upload the B2B sheet.'}), 400
+            return jsonify({'error': 'Could not find header row in GSTR-2B Excel.'}), 400
 
         b2b_df.columns = b2b_df.iloc[header_row_2b]
         b2b_df = b2b_df.iloc[header_row_2b + 1:].reset_index(drop=True)
@@ -12464,7 +12475,6 @@ def purchase_2b_recon():
                     if ci in(7,10) and isinstance(v,float) and abs(v)>0.5:
                         c.fill=fill_rd; c.font=Font(name='Arial',bold=True,color='B71C1C',size=9)
 
-        # Sheet 1 — Summary
         ws1=wb.active; ws1.title='Summary'
         ws1.column_dimensions['A'].width=38; ws1.column_dimensions['B'].width=20
         ws1['A1']=f'Purchase vs GSTR-2B — {fy} {quarter}'
@@ -12493,7 +12503,6 @@ def purchase_2b_recon():
                 ws1.cell(i,1).font=Font(name='Arial',bold=True,size=10,color='B71C1C')
                 ws1.cell(i,2).font=Font(name='Arial',bold=True,size=10,color='B71C1C')
 
-        # Sheet 2 — All Invoices
         ws2=wb.create_sheet('All Invoices')
         for ci,(col,w) in enumerate(zip(COLS,WIDTHS),1):
             c=ws2.cell(1,ci,col); c.font=hf(); c.fill=hfill('0D47A1')
