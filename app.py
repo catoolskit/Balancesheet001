@@ -7734,23 +7734,22 @@ function gstDragLeave(e,dzId){
   <h1>Sales <em>Books vs GSTR 3B</em> <span style="font-size:11px;background:#16a34a;color:#fff;padding:2px 8px;border-radius:99px;vertical-align:middle;font-weight:600">v3.0</span></h1>
   <p>Upload your month-wise sales summary and GSTR 3B PDFs to get an instant reconciliation report showing differences by state and month.</p>
 </div>
-<div style="display:flex;border-bottom:2px solid #e5e7eb;margin:0 0 2rem 0;">
-  <button id="tab-s" onclick="swTab('s')" style="padding:0.75rem 2rem;border:none;background:transparent;font-size:1rem;font-weight:700;cursor:pointer;color:#16a34a;border-bottom:3px solid #16a34a;margin-bottom:-2px;">📊 Sales vs GSTR-3B</button>
-  <button id="tab-p" onclick="swTab('p')" style="padding:0.75rem 2rem;border:none;background:transparent;font-size:1rem;font-weight:500;cursor:pointer;color:#6b7280;border-bottom:3px solid transparent;margin-bottom:-2px;">🧾 Purchase vs GSTR-2B</button>
+<div style="display:flex;margin:0 0 2rem 0;border-radius:8px;overflow:hidden;border:0.5px solid #e5e7eb;">
+  <button id="tab-s" onclick="swTab('s')" style="flex:1;padding:0.75rem 2rem;border:none;font-size:1rem;font-weight:600;cursor:pointer;background:#16a34a;color:#fff;">
+    📊 Sales vs GSTR-3B
+  </button>
+  <button id="tab-p" onclick="swTab('p')" style="flex:1;padding:0.75rem 2rem;border:none;border-left:0.5px solid #e5e7eb;font-size:1rem;font-weight:600;cursor:pointer;background:#fff;color:#6b7280;">
+    🧾 Purchase vs GSTR-2B
+  </button>
 </div>
 <script>
 function swTab(t){
   document.getElementById('pane-sales').style.display=t==='s'?'block':'none';
   document.getElementById('pane-purchase').style.display=t==='p'?'block':'none';
-  document.getElementById('tab-s').style.background=t==='s'?'#16a34a':'transparent';
-  document.getElementById('tab-s').style.color=t==='s'?'#fff':'#6b7280';
-  document.getElementById('tab-s').style.fontWeight=t==='s'?'700':'500';
-  document.getElementById('tab-s').style.borderBottom=t==='s'?'3px solid #16a34a':'3px solid transparent';
-  document.getElementById('tab-p').style.background=t==='p'?'#16a34a':'transparent';
-  document.getElementById('tab-p').style.color=t==='p'?'#fff':'#6b7280';
-  document.getElementById('tab-p').style.fontWeight=t==='p'?'700':'500';
-  document.getElementById('tab-p').style.borderBottom=t==='p'?'3px solid #16a34a':'3px solid transparent';
-}
+  document.getElementById('tab-s').style.background=t==='s'?'#16a34a':'#fff';
+document.getElementById('tab-s').style.color=t==='s'?'#fff':'#6b7280';
+document.getElementById('tab-p').style.background=t==='p'?'#16a34a':'#fff';
+document.getElementById('tab-p').style.color=t==='p'?'#fff':'#6b7280';
 </script>
 <div id="pane-sales">
 <div class="main">
@@ -8382,7 +8381,7 @@ style="display:block; max-width:900px; margin:0 auto; padding:2rem 1rem;"
     <strong>Purchase Excel:</strong> GSTIN of Supplier, Invoice Number, Taxable Value, IGST, CGST, SGST.<br>
     <strong>GSTR-2B Excel:</strong> GST Portal → Returns → GSTR-2B → Download Excel.
   </div>
-  <form method="POST" action="/tool/purchase-2b-reconciliation">
+  <form method="POST" action="/tool/purchase-2b-reconciliation" enctype="multipart/form-data">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
       <div>
         <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Financial Year</label>
