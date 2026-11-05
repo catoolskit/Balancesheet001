@@ -8355,19 +8355,13 @@ function toggleYearly(){
   document.getElementById('quarterlyInputs').style.display=y?'none':'block';
 }
 </script>
-    <div style="text-align:center;">
-      <button type="submit" style="background:#0d9488;color:#fff;border:none;border-radius:10px;padding:0.8rem 3rem;font-size:1rem;font-weight:700;cursor:pointer;">
-        Reconcile Now — Download Excel
-      </button>
-    </div>
-  </form>
-</div>
 
 <div id="pane-purchase" style="display:none; max-width:900px; margin:0 auto; padding:2rem 1rem;">
   <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:0.9rem;color:#166534;">
     <strong>Purchase Excel:</strong> GSTIN of Supplier, Invoice Number, Taxable Value, IGST, CGST, SGST.<br>
     <strong>GSTR-2B Excel:</strong> GST Portal → Returns → GSTR-2B → Download Excel.
   </div>
+<form method="POST" action="/tool/purchase-2b-reconciliation" enctype="multipart/form-data">  
   <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;">
     <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-weight:600;color:#166534;">
       <input type="checkbox" id="yearlyMode" onchange="toggleYearly()" style="width:16px;height:16px;cursor:pointer;">
@@ -8412,7 +8406,6 @@ function toggleYearly(){
       <p style="font-size:0.75rem;color:#6b7280;margin-top:0.3rem;">Q1 / H1 / Full Year — tool auto-detects</p>
     </div>
   </div>
-  <form method="POST" action="/tool/purchase-2b-reconciliation" enctype="multipart/form-data">
     <div style="text-align:center;">
       <button type="submit" style="background:#0d9488;color:#fff;border:none;border-radius:10px;padding:0.8rem 3rem;font-size:1rem;font-weight:700;cursor:pointer;">Reconcile Now — Download Excel</button>
     </div>
