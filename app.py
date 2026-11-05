@@ -8376,6 +8376,50 @@ style="display:block; max-width:900px; margin:0 auto; padding:2rem 1rem;"
 </style>
 
 </div>
+
+<div id="pane-purchase" style="display:none; max-width:900px; margin:0 auto; padding:2rem 1rem;">
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:0.9rem;color:#166534;">
+    <strong>Purchase Excel:</strong> GSTIN of Supplier, Invoice Number, Taxable Value, IGST, CGST, SGST.<br>
+    <strong>GSTR-2B Excel:</strong> GST Portal → Returns → GSTR-2B → Download Excel.
+  </div>
+  <form method="POST" action="/tool/purchase-2b-reconciliation">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Financial Year</label>
+        <select name="fy" style="width:100%;padding:0.6rem;border:1px solid #d1d5db;border-radius:8px;">
+          <option value="2026-27">2026-27</option>
+          <option value="2025-26">2025-26</option>
+          <option value="2024-25">2024-25</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Quarter</label>
+        <select name="quarter" style="width:100%;padding:0.6rem;border:1px solid #d1d5db;border-radius:8px;">
+          <option value="Q1">Q1 — Apr to Jun</option>
+          <option value="Q2">Q2 — Jul to Sep</option>
+          <option value="Q3">Q3 — Oct to Dec</option>
+          <option value="Q4">Q4 — Jan to Mar</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Excel (Books)</label>
+        <input type="file" name="books_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">GSTR-2B Excel (Portal)</label>
+        <input type="file" name="b2b_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button type="submit" style="background:#16a34a;color:#fff;border:none;border-radius:10px;padding:0.8rem 3rem;font-size:1rem;font-weight:700;cursor:pointer;">
+        Reconcile Now — Download Excel
+      </button>
+    </div>
+  </form>
+</div>
+
 </body></html>"""
 
 # ══════════════════════════════════════════════════════════════════════════════
