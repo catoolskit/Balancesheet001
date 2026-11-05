@@ -8375,28 +8375,6 @@ style="display:block; max-width:900px; margin:0 auto; padding:2rem 1rem;"
 .p2bf.active{background:#16a34a;color:#fff;border-color:#16a34a;}
 </style>
 
-function renderP2BCards(s){
-  const cards=[
-    {n:s.total,l:'Total Invoices',c:'#1d4ed8'},
-    {n:s.matched,l:'Matched',c:'#16a34a'},
-    {n:s.books_only,l:'Books Only',c:'#d97706'},
-    {n:s.b2b_only,l:'2B Only',c:'#7c3aed'},
-    {n:'₹'+Number(s.taxable_diff).toLocaleString('en-IN',{maximumFractionDigits:0}),l:'Taxable Diff',c:s.taxable_diff==0?'#16a34a':'#dc2626'},
-    {n:'₹'+Number(s.tax_diff).toLocaleString('en-IN',{maximumFractionDigits:0}),l:'Tax Diff (ITC)',c:s.tax_diff==0?'#16a34a':'#dc2626'},
-  ];
-  document.getElementById('p2b-cards').innerHTML=cards.map(c=>`<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1rem;text-align:center;"><div style="font-size:1.5rem;font-weight:800;color:${c.c}">${c.n}</div><div style="font-size:0.75rem;color:#6b7280;margin-top:0.2rem;">${c.l}</div></div>`).join('');
-}
-function fmtN(n){return Number(n).toLocaleString('en-IN',{maximumFractionDigits:2,minimumFractionDigits:2});}
-function sbadge(s){const m={'Matched':'background:#dcfce7;color:#166534','Books Only':'background:#fef9c3;color:#854d0e','2B Only':'background:#ede9fe;color:#5b21b6'};return `<span style="padding:0.2rem 0.5rem;border-radius:999px;font-size:0.72rem;font-weight:600;${m[s]||''}">${s}</span>`;}
-function renderP2BRows(rows){
-  const tb=document.getElementById('p2b-tbody');
-  if(!rows.length){tb.innerHTML='<tr><td colspan="11" style="text-align:center;padding:2rem;color:#9ca3af;">No data</td></tr>';return;}
-  tb.innerHTML=rows.map(r=>`<tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:0.4rem 0.5rem;">${sbadge(r.status)}</td><td style="padding:0.4rem 0.5rem;font-size:0.72rem;">${r.gstin}</td><td style="padding:0.4rem 0.5rem;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.supplier}">${r.supplier}</td><td style="padding:0.4rem 0.5rem;font-weight:500;">${r.inv_no}</td><td style="padding:0.4rem 0.5rem;text-align:right;">${r.taxable_books>0?fmtN(r.taxable_books):'—'}</td><td style="padding:0.4rem 0.5rem;text-align:right;">${r.taxable_2b>0?fmtN(r.taxable_2b):'—'}</td><td style="padding:0.4rem 0.5rem;text-align:right;color:${r.diff_taxable!=0?'#dc2626':'#16a34a'};font-weight:600;">${r.diff_taxable!=0?fmtN(r.diff_taxable):'✓'}</td><td style="padding:0.4rem 0.5rem;text-align:right;">${r.tax_books>0?fmtN(r.tax_books):'—'}</td><td style="padding:0.4rem 0.5rem;text-align:right;">${r.tax_2b>0?fmtN(r.tax_2b):'—'}</td><td style="padding:0.4rem 0.5rem;text-align:right;color:${r.diff_tax!=0?'#dc2626':'#16a34a'};font-weight:600;">${r.diff_tax!=0?fmtN(r.diff_tax):'✓'}</td><td style="padding:0.4rem 0.5rem;text-align:center;color:${r.itc==='Y'?'#16a34a':'#dc2626'};font-weight:700;">${r.itc}</td></tr>`).join('');
-}
-function fp2b(btn,filter){document.querySelectorAll('.p2bf').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderP2BRows(filter==='all'?_p2bRows:_p2bRows.filter(r=>r.status===filter));}
-function dlP2B(){const cols=['status','gstin','supplier','inv_no','taxable_books','taxable_2b','diff_taxable','tax_books','tax_2b','diff_tax','itc'];const csv=['Status,GSTIN,Supplier,Invoice No,Taxable Books,Taxable 2B,Diff Taxable,Tax Books,Tax 2B,Diff Tax,ITC',..._p2bRows.map(r=>cols.map(k=>`"${r[k]??''}"`).join(','))].join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='purchase_2b_recon.csv';a.click();}
-</script>
-
 </div>
 </body></html>"""
 
