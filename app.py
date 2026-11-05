@@ -7738,6 +7738,20 @@ function gstDragLeave(e,dzId){
   <button id="tab-s" onclick="swTab('s')" style="padding:0.75rem 2rem;border:none;background:transparent;font-size:1rem;font-weight:700;cursor:pointer;color:#16a34a;border-bottom:3px solid #16a34a;margin-bottom:-2px;">📊 Sales vs GSTR-3B</button>
   <button id="tab-p" onclick="swTab('p')" style="padding:0.75rem 2rem;border:none;background:transparent;font-size:1rem;font-weight:500;cursor:pointer;color:#6b7280;border-bottom:3px solid transparent;margin-bottom:-2px;">🧾 Purchase vs GSTR-2B</button>
 </div>
+<script>
+function swTab(t){
+  document.getElementById('pane-sales').style.display=t==='s'?'':'none';
+  document.getElementById('pane-purchase').style.display=t==='p'?'':'none';
+  document.getElementById('tab-s').style.background=t==='s'?'#16a34a':'transparent';
+  document.getElementById('tab-s').style.color=t==='s'?'#fff':'#6b7280';
+  document.getElementById('tab-s').style.fontWeight=t==='s'?'700':'500';
+  document.getElementById('tab-s').style.borderBottom=t==='s'?'3px solid #16a34a':'3px solid transparent';
+  document.getElementById('tab-p').style.background=t==='p'?'#16a34a':'transparent';
+  document.getElementById('tab-p').style.color=t==='p'?'#fff':'#6b7280';
+  document.getElementById('tab-p').style.fontWeight=t==='p'?'700':'500';
+  document.getElementById('tab-p').style.borderBottom=t==='p'?'3px solid #16a34a':'3px solid transparent';
+}
+</script>
 <div id="pane-sales">
 <div class="main">
   <div class="card">
