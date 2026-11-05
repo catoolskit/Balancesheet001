@@ -12240,27 +12240,40 @@ def purchase_2b_recon():
     try:
         quarter    = request.form.get('quarter', 'Q1')
         fy         = request.form.get('fy', '2026-27')
-        books_file = request.files.get('books_file')
+        books_file  = request.files.get('books_file')
+        books_file2 = request.files.get('books_file2')
         b2b_file   = request.files.get('b2b_file')
 
         if not books_file or not b2b_file:
             return jsonify({'error': 'Both files are required.'}), 400
 
-        # ── Read Purchase Books ───────────────────────────────────────────
-        books_df = pd.read_excel(books_file, header=None)
-        header_row = None
-        for i, row in books_df.iterrows():
-            if any(str(c).strip().upper() in [
-                'GSTIN OF SUPPLIER', 'GSTIN', 'INVOICE NUMBER', 'INVOICE NO'
-            ] for c in row.values):
-                header_row = i
-                break
-        if header_row is None:
-            return jsonify({'error': 'Could not find header row in Purchase Excel.'}), 400
+        # ── Helper: read purchase Excel ───────────────────────────────────
+        def read_purchase(f):
+            df = pd.read_excel(f, header=None)
+            hr = None
+            for i, row in df.iterrows():
+                if any(str(c).strip().upper() in [
+                    'GSTIN OF SUPPLIER', 'GSTIN', 'INVOICE NUMBER', 'INVOICE NO'
+                ] for c in row.values):
+                    hr = i
+                    break
+            if hr is None:
+                return None, 'Could not find header row in Purchase Excel.'
+            df.columns = df.iloc[hr]
+            df = df.iloc[hr + 1:].reset_index(drop=True)
+            df.columns = [str(c).strip() for c in df.columns]
+            return df, None
 
-        books_df.columns = books_df.iloc[header_row]
-        books_df = books_df.iloc[header_row + 1:].reset_index(drop=True)
-        books_df.columns = [str(c).strip() for c in books_df.columns]
+        books_df, err = read_purchase(books_file)
+        if err:
+            return jsonify({'error': err}), 400
+
+        # Merge Q2 purchase file if provided
+        if books_file2 and books_file2.filename:
+            books_df2, _ = read_purchase(books_file2)
+            if books_df2 is not None:
+                # align columns
+                books_df = pd.concat([books_df, books_df2], ignore_index=True)
 
         col_map_books = {}
         for c in books_df.columns:
@@ -12287,15 +12300,21 @@ def purchase_2b_recon():
         books_clean['inv_no']  = books_clean['inv_no'].astype(str).str.strip().str.upper()
         books_clean['taxable'] = pd.to_numeric(books_clean['taxable'], errors='coerce').fillna(0)
         for col in ['igst', 'cgst', 'sgst']:
-            books_clean[col] = pd.to_numeric(books_clean.get(col, 0), errors='coerce').fillna(0) if col in books_clean.columns else 0.0
+            books_clean[col] = pd.to_numeric(books_clean[col], errors='coerce').fillna(0) if col in books_clean.columns else 0.0
 
         agg_dict = {'taxable': 'sum', 'igst': 'sum', 'cgst': 'sum', 'sgst': 'sum'}
         if 'supplier' in books_clean.columns: agg_dict['supplier'] = 'first'
         books_agg = books_clean.groupby(['gstin', 'inv_no']).agg(agg_dict).reset_index()
-        books_agg.rename(columns={'taxable': 'taxable_books', 'igst': 'igst_books', 'cgst': 'cgst_books', 'sgst': 'sgst_books'}, inplace=True)
+        books_agg.rename(columns={'taxable': 'taxable_books', 'igst': 'igst_books',
+                                   'cgst': 'cgst_books', 'sgst': 'sgst_books'}, inplace=True)
 
-        # ── Read GSTR-2B ──────────────────────────────────────────────────
-        b2b_df = pd.read_excel(b2b_file, header=None)
+        # ── Read GSTR-2B — try B2B sheet first (new format) ──────────────
+        try:
+            b2b_df = pd.read_excel(b2b_file, sheet_name='B2B', header=None)
+        except Exception:
+            b2b_file.seek(0)
+            b2b_df = pd.read_excel(b2b_file, header=None)
+
         header_row_2b = None
         for i, row in b2b_df.iterrows():
             if any(str(c).strip().upper() in [
@@ -12305,7 +12324,7 @@ def purchase_2b_recon():
                 header_row_2b = i
                 break
         if header_row_2b is None:
-            return jsonify({'error': 'Could not find header row in GSTR-2B Excel.'}), 400
+            return jsonify({'error': 'Could not find header row in GSTR-2B Excel. Please upload the B2B sheet.'}), 400
 
         b2b_df.columns = b2b_df.iloc[header_row_2b]
         b2b_df = b2b_df.iloc[header_row_2b + 1:].reset_index(drop=True)
@@ -12341,7 +12360,8 @@ def purchase_2b_recon():
         if 'supplier' in b2b_clean.columns: agg_dict_2b['supplier'] = 'first'
         if 'itc' in b2b_clean.columns: agg_dict_2b['itc'] = 'first'
         b2b_agg = b2b_clean.groupby(['gstin', 'inv_no']).agg(agg_dict_2b).reset_index()
-        b2b_agg.rename(columns={'taxable': 'taxable_2b', 'igst': 'igst_2b', 'cgst': 'cgst_2b', 'sgst': 'sgst_2b'}, inplace=True)
+        b2b_agg.rename(columns={'taxable': 'taxable_2b', 'igst': 'igst_2b',
+                                  'cgst': 'cgst_2b', 'sgst': 'sgst_2b'}, inplace=True)
 
         # ── Merge ─────────────────────────────────────────────────────────
         merged = pd.merge(books_agg, b2b_agg, on=['gstin', 'inv_no'], how='outer', indicator=True)
@@ -12369,7 +12389,7 @@ def purchase_2b_recon():
         rgt   = Alignment(horizontal='right',  vertical='center')
         lft   = Alignment(horizontal='left',   vertical='center')
 
-        def hf(color='1B5E20'): return Font(name='Arial', bold=True, size=10, color='FFFFFF')
+        def hf(): return Font(name='Arial', bold=True, size=10, color='FFFFFF')
         def hfill(c): return PatternFill('solid', fgColor=c)
         fill_m  = PatternFill('solid', fgColor='E8F5E9')
         fill_bo = PatternFill('solid', fgColor='FFFDE7')
@@ -12395,8 +12415,7 @@ def purchase_2b_recon():
                       round(float(row.get('diff_taxable',0)),2),round(float(row.get('tax_books',0)),2),
                       round(float(row.get('tax_2b',0)),2),round(float(row.get('diff_tax',0)),2),itc_v]
                 for ci,v in enumerate(vals,1):
-                    c=ws.cell(ri,ci,v); c.border=bdr
-                    c.fill=row_fill
+                    c=ws.cell(ri,ci,v); c.border=bdr; c.fill=row_fill
                     c.alignment=rgt if ci>=5 else lft
                     if ci>=5 and isinstance(v,float): c.number_format='#,##0.00'
                     if ci in(7,10) and isinstance(v,float) and abs(v)>0.5:
@@ -12426,12 +12445,12 @@ def purchase_2b_recon():
             if l=='Metric':
                 for ci in [1,2]:
                     ws1.cell(i,ci).fill=hfill('0D47A1')
-                    ws1.cell(i,ci).font=hf('0D47A1')
+                    ws1.cell(i,ci).font=hf()
             if 'risk' in l or 'Difference' in l or 'impact' in l:
                 ws1.cell(i,1).font=Font(name='Arial',bold=True,size=10,color='B71C1C')
                 ws1.cell(i,2).font=Font(name='Arial',bold=True,size=10,color='B71C1C')
 
-        # Sheets 2-5
+        # Sheet 2 — All Invoices
         ws2=wb.create_sheet('All Invoices')
         for ci,(col,w) in enumerate(zip(COLS,WIDTHS),1):
             c=ws2.cell(1,ci,col); c.font=hf(); c.fill=hfill('0D47A1')
@@ -12455,14 +12474,11 @@ def purchase_2b_recon():
 
         ws3=wb.create_sheet('Books Only (ITC at Risk)')
         write_sheet(ws3, merged[merged['status']=='Books Only'], fill_bo, 'E65100')
-
         ws4=wb.create_sheet('2B Only (Missing in Books)')
         write_sheet(ws4, merged[merged['status']=='2B Only'], fill_2b, '4A148C')
-
         ws5=wb.create_sheet('Matched')
         write_sheet(ws5, merged[merged['status']=='Matched'], fill_m, '1B5E20')
 
-        # Save & send
         output=io.BytesIO()
         wb.save(output); output.seek(0)
         from flask import send_file as sf
