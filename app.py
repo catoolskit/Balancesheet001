@@ -7734,7 +7734,7 @@ function gstDragLeave(e,dzId){
   <h1>Sales <em>Books vs GSTR 3B</em> <span style="font-size:11px;background:#16a34a;color:#fff;padding:2px 8px;border-radius:99px;vertical-align:middle;font-weight:600">v3.0</span></h1>
   <p>Upload your month-wise sales summary and GSTR 3B PDFs to get an instant reconciliation report showing differences by state and month.</p>
 </div>
-<div style="display:flex;margin:0 0 2rem 0;border-radius:8px;overflow:hidden;border:0.5px solid #e5e7eb;">
+<div style="display:flex;margin:0 0 2rem 0;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
   <button id="tab-s" onclick="swTab('s')" style="flex:1;padding:0.75rem 2rem;border:none;font-size:1rem;font-weight:600;cursor:pointer;background:#0d9488;color:#fff;">
     📊 Sales vs GSTR-3B
   </button>
@@ -8301,107 +8301,7 @@ style="display:block; max-width:900px; margin:0 auto; padding:2rem 1rem;"
     <strong>Purchase Excel:</strong> GSTIN of Supplier, Invoice Number, Taxable Value, IGST, CGST, SGST.<br>
     <strong>GSTR-2B Excel:</strong> GST Portal → Returns → GSTR-2B → Download Excel.
   </div>
-  <form id="p2bForm" method="POST" action="/tool/purchase-2b-reconciliation">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
-      <div>
-        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Financial Year</label>
-        <select name="fy" style="width:100%;padding:0.6rem;border:1px solid #d1d5db;border-radius:8px;">
-          <option value="2026-27">2026-27</option>
-          <option value="2025-26">2025-26</option>
-          <option value="2024-25">2024-25</option>
-        </select>
-      </div>
-      <div>
-        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Quarter</label>
-        <select name="quarter" style="width:100%;padding:0.6rem;border:1px solid #d1d5db;border-radius:8px;">
-          <option value="Q1">Q1 — Apr to Jun</option>
-          <option value="Q2">Q2 — Jul to Sep</option>
-          <option value="Q3">Q3 — Oct to Dec</option>
-          <option value="Q4">Q4 — Jan to Mar</option>
-        </select>
-      </div>
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
-      <div>
-        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Excel (Books)</label>
-        <input type="file" name="books_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
-      </div>
-      <div>
-        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">GSTR-2B Excel (Portal)</label>
-        <input type="file" name="b2b_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
-      </div>
-    </div>
-    <div style="text-align:center;">
-      <button type="submit" id="p2b-submit" style="background:#16a34a;color:#fff;border:none;border-radius:10px;padding:0.8rem 3rem;font-size:1rem;font-weight:700;cursor:pointer;">Reconcile Now</button>
-    </div>
-  </form>
-  <div id="p2b-error" style="display:none;background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;border-radius:8px;padding:1rem;margin-top:1rem;"></div>
-  <div id="p2b-results" style="display:none;margin-top:2rem;">
-    <div id="p2b-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;"></div>
-    <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
-      <button class="p2bf active" onclick="fp2b(this,'all')">All</button>
-      <button class="p2bf" onclick="fp2b(this,'Matched')">Matched</button>
-      <button class="p2bf" onclick="fp2b(this,'Books Only')">Books Only</button>
-      <button class="p2bf" onclick="fp2b(this,'2B Only')">2B Only</button>
-    </div>
-    <div style="overflow-x:auto;">
-      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
-        <thead style="background:#f3f4f6;">
-          <tr>
-            <th style="padding:0.5rem;text-align:left;border-bottom:2px solid #e5e7eb;">Status</th>
-            <th style="padding:0.5rem;text-align:left;border-bottom:2px solid #e5e7eb;">GSTIN</th>
-            <th style="padding:0.5rem;text-align:left;border-bottom:2px solid #e5e7eb;">Supplier</th>
-            <th style="padding:0.5rem;text-align:left;border-bottom:2px solid #e5e7eb;">Invoice No</th>
-            <th style="padding:0.5rem;text-align:right;border-bottom:2px solid #e5e7eb;">Taxable (Books)</th>
-            <th style="padding:0.5rem;text-align:right;border-bottom:2px solid #e5e7eb;">Taxable (2B)</th>
-            <th style="padding:0.5rem;text-align:right;border-bottom:2px solid #e5e7eb;">Diff</th>
-            <th style="padding:0.5rem;text-align:right;border-bottom:2px solid #e5e7eb;">Tax (Books)</th>
-            <th style="padding:0.5rem;text-align:right;border-bottom:2px solid #e5e7eb;">Tax (2B)</th>
-            <th style="padding:0.5rem;text-align:right;border-bottom:2px solid #e5e7eb;">Tax Diff</th>
-            <th style="padding:0.5rem;text-align:center;border-bottom:2px solid #e5e7eb;">ITC</th>
-          </tr>
-        </thead>
-        <tbody id="p2b-tbody"></tbody>
-      </table>
-    </div>
-    <div style="margin-top:1rem;text-align:right;">
-      <button onclick="dlP2B()" style="background:#1d4ed8;color:#fff;border:none;border-radius:8px;padding:0.6rem 1.5rem;font-weight:600;cursor:pointer;">Download CSV</button>
-    </div>
-  </div>
-</div>
-
-<style>
-.p2bf{padding:0.4rem 1rem;border:1px solid #d1d5db;border-radius:999px;background:#fff;cursor:pointer;font-size:0.85rem;}
-.p2bf.active{background:#16a34a;color:#fff;border-color:#16a34a;}
-</style>
-
-</div>
-
-<div id="pane-purchase" style="display:none; max-width:900px; margin:0 auto; padding:2rem 1rem;">
-  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:0.9rem;color:#166534;">
-    <strong>Purchase Excel:</strong> GSTIN of Supplier, Invoice Number, Taxable Value, IGST, CGST, SGST.<br>
-    <strong>GSTR-2B Excel:</strong> GST Portal → Returns → GSTR-2B → Download Excel.
-  </div>
-  <form method="POST" action="/tool/purchase-2b-reconciliation" enctype="multipart/form-data">
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
-      <div>
-        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Financial Year</label>
-        <select name="fy" style="width:100%;padding:0.6rem;border:1px solid #d1d5db;border-radius:8px;">
-          <option value="2026-27">2026-27</option>
-          <option value="2025-26">2025-26</option>
-          <option value="2024-25">2024-25</option>
-        </select>
-      </div>
-      <div>
-        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Quarter</label>
-        <select name="quarter" style="width:100%;padding:0.6rem;border:1px solid #d1d5db;border-radius:8px;">
-          <option value="Q1">Q1 — Apr to Jun</option>
-          <option value="Q2">Q2 — Jul to Sep</option>
-          <option value="Q3">Q3 — Oct to Dec</option>
-          <option value="Q4">Q4 — Jan to Mar</option>
-        </select>
-      </div>
-    </div>
+  
    <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:0.75rem 1rem;margin-bottom:1rem;">
   <label style="display:flex;align-items:center;gap:0.5rem;cursor:pointer;font-weight:600;color:#166534;">
     <input type="checkbox" id="yearlyMode" onchange="toggleYearly()" style="width:16px;height:16px;cursor:pointer;">
@@ -8456,7 +8356,7 @@ function toggleYearly(){
 }
 </script>
     <div style="text-align:center;">
-      <button type="submit" style="background:#16a34a;color:#fff;border:none;border-radius:10px;padding:0.8rem 3rem;font-size:1rem;font-weight:700;cursor:pointer;">
+      <button type="submit" style="background:#0d9488;color:#fff;border:none;border-radius:10px;padding:0.8rem 3rem;font-size:1rem;font-weight:700;cursor:pointer;">
         Reconcile Now — Download Excel
       </button>
     </div>
