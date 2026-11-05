@@ -7734,7 +7734,11 @@ function gstDragLeave(e,dzId){
   <h1>Sales <em>Books vs GSTR 3B</em> <span style="font-size:11px;background:#16a34a;color:#fff;padding:2px 8px;border-radius:99px;vertical-align:middle;font-weight:600">v3.0</span></h1>
   <p>Upload your month-wise sales summary and GSTR 3B PDFs to get an instant reconciliation report showing differences by state and month.</p>
 </div>
-
+<div style="display:flex;border-bottom:2px solid #e5e7eb;margin:0 0 2rem 0;">
+  <button id="tab-s" onclick="swTab('s')" style="padding:0.75rem 2rem;border:none;background:transparent;font-size:1rem;font-weight:700;cursor:pointer;color:#16a34a;border-bottom:3px solid #16a34a;margin-bottom:-2px;">📊 Sales vs GSTR-3B</button>
+  <button id="tab-p" onclick="swTab('p')" style="padding:0.75rem 2rem;border:none;background:transparent;font-size:1rem;font-weight:500;cursor:pointer;color:#6b7280;border-bottom:3px solid transparent;margin-bottom:-2px;">🧾 Purchase vs GSTR-2B</button>
+</div>
+<div id="pane-sales">
 <div class="main">
   <div class="card">
     <div class="card-head">
@@ -8277,6 +8281,128 @@ async function doProcess(){
   </div>
 </div>
 <script>function openHelp(){document.getElementById('helpOverlay').classList.add('open')}function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}document.getElementById('helpOverlay').addEventListener('click',function(e){if(e.target===this)closeHelp()})</script>
+<!-- ═══ PURCHASE vs 2B PANE ═══════════════════════════════════════════ -->
+<div id="pane-purchase" style="display:none; max-width:900px; margin:0 auto; padding:2rem 1rem;">
+  <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:0.9rem;color:#166534;">
+    <strong>Purchase Excel:</strong> GSTIN of Supplier, Invoice Number, Taxable Value, IGST, CGST, SGST.<br>
+    <strong>GSTR-2B Excel:</strong> GST Portal → Returns → GSTR-2B → Download Excel.
+  </div>
+  <form id="p2bForm">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Financial Year</label>
+        <select name="fy" style="width:100%;padding:0.6rem;border:1px solid #d1d5db;border-radius:8px;">
+          <option value="2026-27">2026-27</option>
+          <option value="2025-26">2025-26</option>
+          <option value="2024-25">2024-25</option>
+        </select>
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Quarter</label>
+        <select name="quarter" style="width:100%;padding:0.6rem;border:1px solid #d1d5db;border-radius:8px;">
+          <option value="Q1">Q1 — Apr to Jun</option>
+          <option value="Q2">Q2 — Jul to Sep</option>
+          <option value="Q3">Q3 — Oct to Dec</option>
+          <option value="Q4">Q4 — Jan to Mar</option>
+        </select>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.5rem;">
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Purchase Excel (Books)</label>
+        <input type="file" name="books_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
+      </div>
+      <div>
+        <label style="font-weight:600;display:block;margin-bottom:0.4rem;">GSTR-2B Excel (Portal)</label>
+        <input type="file" name="b2b_file" accept=".xlsx,.xls" style="width:100%;padding:0.6rem;border:2px dashed #d1d5db;border-radius:8px;background:#f9fafb;cursor:pointer;">
+      </div>
+    </div>
+    <div style="text-align:center;">
+      <button type="submit" id="p2b-submit" style="background:#16a34a;color:#fff;border:none;border-radius:10px;padding:0.8rem 3rem;font-size:1rem;font-weight:700;cursor:pointer;">Reconcile Now</button>
+    </div>
+  </form>
+  <div id="p2b-error" style="display:none;background:#fef2f2;border:1px solid #fca5a5;color:#991b1b;border-radius:8px;padding:1rem;margin-top:1rem;"></div>
+  <div id="p2b-results" style="display:none;margin-top:2rem;">
+    <div id="p2b-cards" style="display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:1.5rem;"></div>
+    <div style="display:flex;gap:0.5rem;margin-bottom:1rem;flex-wrap:wrap;">
+      <button class="p2bf active" onclick="fp2b(this,'all')">All</button>
+      <button class="p2bf" onclick="fp2b(this,'Matched')">Matched</button>
+      <button class="p2bf" onclick="fp2b(this,'Books Only')">Books Only</button>
+      <button class="p2bf" onclick="fp2b(this,'2B Only')">2B Only</button>
+    </div>
+    <div style="overflow-x:auto;">
+      <table style="width:100%;border-collapse:collapse;font-size:0.82rem;">
+        <thead style="background:#f3f4f6;">
+          <tr>
+            <th style="padding:0.5rem;text-align:left;border-bottom:2px solid #e5e7eb;">Status</th>
+            <th style="padding:0.5rem;text-align:left;border-bottom:2px solid #e5e7eb;">GSTIN</th>
+            <th style="padding:0.5rem;text-align:left;border-bottom:2px solid #e5e7eb;">Supplier</th>
+            <th style="padding:0.5rem;text-align:left;border-bottom:2px solid #e5e7eb;">Invoice No</th>
+            <th style="padding:0.5rem;text-align:right;border-bottom:2px solid #e5e7eb;">Taxable (Books)</th>
+            <th style="padding:0.5rem;text-align:right;border-bottom:2px solid #e5e7eb;">Taxable (2B)</th>
+            <th style="padding:0.5rem;text-align:right;border-bottom:2px solid #e5e7eb;">Diff</th>
+            <th style="padding:0.5rem;text-align:right;border-bottom:2px solid #e5e7eb;">Tax (Books)</th>
+            <th style="padding:0.5rem;text-align:right;border-bottom:2px solid #e5e7eb;">Tax (2B)</th>
+            <th style="padding:0.5rem;text-align:right;border-bottom:2px solid #e5e7eb;">Tax Diff</th>
+            <th style="padding:0.5rem;text-align:center;border-bottom:2px solid #e5e7eb;">ITC</th>
+          </tr>
+        </thead>
+        <tbody id="p2b-tbody"></tbody>
+      </table>
+    </div>
+    <div style="margin-top:1rem;text-align:right;">
+      <button onclick="dlP2B()" style="background:#1d4ed8;color:#fff;border:none;border-radius:8px;padding:0.6rem 1.5rem;font-weight:600;cursor:pointer;">Download CSV</button>
+    </div>
+  </div>
+</div>
+
+<style>
+.p2bf{padding:0.4rem 1rem;border:1px solid #d1d5db;border-radius:999px;background:#fff;cursor:pointer;font-size:0.85rem;}
+.p2bf.active{background:#16a34a;color:#fff;border-color:#16a34a;}
+</style>
+
+<script>
+let _p2bRows=[];
+document.getElementById('p2bForm').addEventListener('submit',async function(e){
+  e.preventDefault();
+  const btn=document.getElementById('p2b-submit');
+  btn.textContent='Processing...';btn.disabled=true;
+  document.getElementById('p2b-error').style.display='none';
+  document.getElementById('p2b-results').style.display='none';
+  try{
+    const res=await fetch('/tool/purchase-2b-reconciliation',{method:'POST',body:new FormData(this)});
+    const data=await res.json();
+    if(!data.success){document.getElementById('p2b-error').textContent=data.error;document.getElementById('p2b-error').style.display='block';return;}
+    _p2bRows=data.rows;
+    renderP2BCards(data.summary);
+    renderP2BRows(_p2bRows);
+    document.getElementById('p2b-results').style.display='block';
+  }catch(err){document.getElementById('p2b-error').textContent='Error: '+err.message;document.getElementById('p2b-error').style.display='block';}
+  finally{btn.textContent='Reconcile Now';btn.disabled=false;}
+});
+function renderP2BCards(s){
+  const cards=[
+    {n:s.total,l:'Total Invoices',c:'#1d4ed8'},
+    {n:s.matched,l:'Matched',c:'#16a34a'},
+    {n:s.books_only,l:'Books Only',c:'#d97706'},
+    {n:s.b2b_only,l:'2B Only',c:'#7c3aed'},
+    {n:'₹'+Number(s.taxable_diff).toLocaleString('en-IN',{maximumFractionDigits:0}),l:'Taxable Diff',c:s.taxable_diff==0?'#16a34a':'#dc2626'},
+    {n:'₹'+Number(s.tax_diff).toLocaleString('en-IN',{maximumFractionDigits:0}),l:'Tax Diff (ITC)',c:s.tax_diff==0?'#16a34a':'#dc2626'},
+  ];
+  document.getElementById('p2b-cards').innerHTML=cards.map(c=>`<div style="background:#fff;border:1px solid #e5e7eb;border-radius:10px;padding:1rem;text-align:center;"><div style="font-size:1.5rem;font-weight:800;color:${c.c}">${c.n}</div><div style="font-size:0.75rem;color:#6b7280;margin-top:0.2rem;">${c.l}</div></div>`).join('');
+}
+function fmtN(n){return Number(n).toLocaleString('en-IN',{maximumFractionDigits:2,minimumFractionDigits:2});}
+function sbadge(s){const m={'Matched':'background:#dcfce7;color:#166534','Books Only':'background:#fef9c3;color:#854d0e','2B Only':'background:#ede9fe;color:#5b21b6'};return `<span style="padding:0.2rem 0.5rem;border-radius:999px;font-size:0.72rem;font-weight:600;${m[s]||''}">${s}</span>`;}
+function renderP2BRows(rows){
+  const tb=document.getElementById('p2b-tbody');
+  if(!rows.length){tb.innerHTML='<tr><td colspan="11" style="text-align:center;padding:2rem;color:#9ca3af;">No data</td></tr>';return;}
+  tb.innerHTML=rows.map(r=>`<tr style="border-bottom:1px solid #f3f4f6;"><td style="padding:0.4rem 0.5rem;">${sbadge(r.status)}</td><td style="padding:0.4rem 0.5rem;font-size:0.72rem;">${r.gstin}</td><td style="padding:0.4rem 0.5rem;max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="${r.supplier}">${r.supplier}</td><td style="padding:0.4rem 0.5rem;font-weight:500;">${r.inv_no}</td><td style="padding:0.4rem 0.5rem;text-align:right;">${r.taxable_books>0?fmtN(r.taxable_books):'—'}</td><td style="padding:0.4rem 0.5rem;text-align:right;">${r.taxable_2b>0?fmtN(r.taxable_2b):'—'}</td><td style="padding:0.4rem 0.5rem;text-align:right;color:${r.diff_taxable!=0?'#dc2626':'#16a34a'};font-weight:600;">${r.diff_taxable!=0?fmtN(r.diff_taxable):'✓'}</td><td style="padding:0.4rem 0.5rem;text-align:right;">${r.tax_books>0?fmtN(r.tax_books):'—'}</td><td style="padding:0.4rem 0.5rem;text-align:right;">${r.tax_2b>0?fmtN(r.tax_2b):'—'}</td><td style="padding:0.4rem 0.5rem;text-align:right;color:${r.diff_tax!=0?'#dc2626':'#16a34a'};font-weight:600;">${r.diff_tax!=0?fmtN(r.diff_tax):'✓'}</td><td style="padding:0.4rem 0.5rem;text-align:center;color:${r.itc==='Y'?'#16a34a':'#dc2626'};font-weight:700;">${r.itc}</td></tr>`).join('');
+}
+function fp2b(btn,filter){document.querySelectorAll('.p2bf').forEach(b=>b.classList.remove('active'));btn.classList.add('active');renderP2BRows(filter==='all'?_p2bRows:_p2bRows.filter(r=>r.status===filter));}
+function dlP2B(){const cols=['status','gstin','supplier','inv_no','taxable_books','taxable_2b','diff_taxable','tax_books','tax_2b','diff_tax','itc'];const csv=['Status,GSTIN,Supplier,Invoice No,Taxable Books,Taxable 2B,Diff Taxable,Tax Books,Tax 2B,Diff Tax,ITC',..._p2bRows.map(r=>cols.map(k=>`"${r[k]??''}"`).join(','))].join('\n');const a=document.createElement('a');a.href='data:text/csv;charset=utf-8,'+encodeURIComponent(csv);a.download='purchase_2b_recon.csv';a.click();}
+</script>
+
+</div>
 </body></html>"""
 
 # ══════════════════════════════════════════════════════════════════════════════
