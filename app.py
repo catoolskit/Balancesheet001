@@ -8296,12 +8296,12 @@ async function doProcess(){
 </div>
 <script>function openHelp(){document.getElementById('helpOverlay').classList.add('open')}function closeHelp(){document.getElementById('helpOverlay').classList.remove('open')}document.getElementById('helpOverlay').addEventListener('click',function(e){if(e.target===this)closeHelp()})</script>
 <!-- ═══ PURCHASE vs 2B PANE ═══════════════════════════════════════════ -->
-<div id="pane-purchase" style="display:none; max-width:900px; margin:0 auto; padding:2rem 1rem;">
+style="display:block; max-width:900px; margin:0 auto; padding:2rem 1rem;"
   <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:1rem 1.25rem;margin-bottom:1.5rem;font-size:0.9rem;color:#166534;">
     <strong>Purchase Excel:</strong> GSTIN of Supplier, Invoice Number, Taxable Value, IGST, CGST, SGST.<br>
     <strong>GSTR-2B Excel:</strong> GST Portal → Returns → GSTR-2B → Download Excel.
   </div>
-  <form id="p2bForm">
+  <form id="p2bForm" method="POST" action="/tool/purchase-2b-reconciliation">
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem;">
       <div>
         <label style="font-weight:600;display:block;margin-bottom:0.4rem;">Financial Year</label>
@@ -8375,25 +8375,6 @@ async function doProcess(){
 .p2bf.active{background:#16a34a;color:#fff;border-color:#16a34a;}
 </style>
 
-<script>
-let _p2bRows=[];
-document.getElementById('p2bForm').addEventListener('submit',async function(e){
-  e.preventDefault();
-  const btn=document.getElementById('p2b-submit');
-  btn.textContent='Processing...';btn.disabled=true;
-  document.getElementById('p2b-error').style.display='none';
-  document.getElementById('p2b-results').style.display='none';
-  try{
-    const res=await fetch('/tool/purchase-2b-reconciliation',{method:'POST',body:new FormData(this)});
-    const data=await res.json();
-    if(!data.success){document.getElementById('p2b-error').textContent=data.error;document.getElementById('p2b-error').style.display='block';return;}
-    _p2bRows=data.rows;
-    renderP2BCards(data.summary);
-    renderP2BRows(_p2bRows);
-    document.getElementById('p2b-results').style.display='block';
-  }catch(err){document.getElementById('p2b-error').textContent='Error: '+err.message;document.getElementById('p2b-error').style.display='block';}
-  finally{btn.textContent='Reconcile Now';btn.disabled=false;}
-});
 function renderP2BCards(s){
   const cards=[
     {n:s.total,l:'Total Invoices',c:'#1d4ed8'},
