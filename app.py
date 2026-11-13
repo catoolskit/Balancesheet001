@@ -41,6 +41,9 @@ def handle_500(e):
 
 @app.errorhandler(Exception)
 def handle_exception(e):
+    from werkzeug.exceptions import HTTPException
+    if isinstance(e, HTTPException):
+        return e  # pass 404, 403, etc. through unchanged — DO NOT raise them
     if request.path == "/process":
         return jsonify({"status": "error", "message": f"Server error: {e}"}), 500
     raise e
