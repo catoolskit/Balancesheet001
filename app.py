@@ -7353,19 +7353,6 @@ function gstDragLeave(e,dzId){
   <h1>Sales <em>Books vs GSTR 3B</em> <span style="font-size:11px;background:#16a34a;color:#fff;padding:2px 8px;border-radius:99px;vertical-align:middle;font-weight:600">v3.0</span></h1>
   <p>Upload your month-wise sales summary and GSTR 3B PDFs to get an instant reconciliation report showing differences by state and month.</p>
 </div>
-<div style="display:flex;margin:0 0 2rem 0;border-radius:8px;overflow:hidden;border:1px solid #e5e7eb;">
-  <button id="tab-s" onclick="swTab('s')" style="flex:1;padding:0.75rem 2rem;border:none;font-size:1rem;font-weight:600;cursor:pointer;background:#0d9488;color:#fff;">
-    📊 Sales vs GSTR-3B
-  </button>
-  </div>
-<script>
-function swTab(t){
-document.getElementById('pane-sales').style.display=t==='s'?'block':'none';
-document.getElementById('tab-s').style.background=t==='s'?'#0d9488':'#fff';
-document.getElementById('tab-s').style.color=t==='s'?'#fff':'#6b7280';
-}
-</script>
-<div id="pane-sales">
 <div class="main">
   <div class="card">
     <div class="card-head">
