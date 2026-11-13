@@ -1369,24 +1369,7 @@ footer{width:100vw;position:relative;left:50%;margin-left:-50vw}
       </div>
     </a>
 
-    {% if username %}
-    <a href="/tool/compliance-tracker" class="tool-card premium-card anim-up anim-d5">
-      <span class="corner-badge cb-prem">⭐ Premium</span>
-    {% else %}
-    <a href="/login" class="tool-card premium-card anim-up anim-d5">
-      <span class="corner-badge cb-lock">🔒 Sign In</span>
-    {% endif %}
-      <div class="tool-icon" style="background:linear-gradient(135deg,#EEF2FF,#C7D2FE)">🗂️</div>
-      <h2>Compliance Payment Tracker</h2>
-      <p>Upload a ZIP of your payment PDFs — EPF, ESIC, GST, TDS, Electricity — and get a ready compliance register table instantly.</p>
-      <div class="tool-footer">
-        {% if username %}<span class="tool-tag tag-live-prem">✓ Live · Premium</span>
-        {% else %}<span class="tool-tag tag-login">🔒 Login to Use</span>{% endif %}
-        <span class="tool-arrow">→</span>
-      </div>
-    </a>
-
-  <!-- ── FREE TOOLS ──────────────────────────────────────────────── -->
+     <!-- ── FREE TOOLS ──────────────────────────────────────────────── -->
 </div><!-- close section-wrap -->
 
 <div class="free-section-wrap">
