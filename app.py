@@ -6220,6 +6220,35 @@ CA_TOOLS_HUB_TEMPLATE = """<!DOCTYPE html><html lang="en"><head><meta charset="U
 
   </div>
 
+          <!-- MUNIM -->
+        <div class="hub-card anim-up anim-d2" style="--hc-grad:linear-gradient(90deg,#071B49,#0D2560,#071B49)">
+          <div class="hub-card-head">
+            <div class="hub-icon" style="background:linear-gradient(135deg,#071B49,#1a3a7a)">🏪</div>
+            <div>
+              <div class="hub-tag" style="background:#F4C430;color:#071B49;border-color:#D4A820">Free · For Small Businesses</div>
+              <div class="hub-name">MUNIM — Accounting Software</div>
+              <div class="hub-tagline">Complete offline accounting for Indian small businesses.</div>
+            </div>
+          </div>
+          <p class="hub-desc">
+            Sales Register, Purchase Register, Journal, Ledger, Trial Balance, Balance Sheet and more — all in one free .exe file. Works 100% offline. No subscription ever. All data saved on your own computer at C:\MUNIM\.
+          </p>
+          <div class="hub-features">
+            <span class="hub-feat">✓ Sales &amp; Purchase Register</span>
+            <span class="hub-feat" style="background:#F4C430;color:#071B49;border-color:#D4A820">✓ Trial Balance &amp; Balance Sheet</span>
+            <span class="hub-feat">✓ GST Invoice printing</span>
+            <span class="hub-feat" style="background:#F4C430;color:#071B49;border-color:#D4A820">✓ 100% offline</span>
+            <span class="hub-feat">✓ Free forever</span>
+          </div>
+          <div class="hub-cta-row">
+            <a href="https://munim-khaki.vercel.app" target="_blank" rel="noopener"
+              class="hub-cta" style="background:linear-gradient(135deg,#F4C430,#D4A820)">
+              Open MUNIM Website ↗
+            </a>
+            <span class="hub-note">Free · Opens in new tab · Windows only</span>
+          </div>
+        </div>
+
   <div class="page-divider"></div>
   <div class="page-section">
     <h2>Request a tool</h2>
